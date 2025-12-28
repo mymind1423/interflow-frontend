@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { StatCard, SectionHeader, OfferCard, InterviewWidget, AIPitchWidget, TokenInfoWidget } from "../../components/dashboard/StudentWidgets";
 import JobDrawer from "../../components/modals/JobDrawer";
 import AIPitchModal from "../../components/modals/AIPitchModal";
+import { fixEncoding } from "../../utils/stringUtils";
 
 
 function Dashboard() {
@@ -251,16 +252,17 @@ function Dashboard() {
                   ).map((job) => (
                     <OfferCard
                       key={job.id}
-                      role={job.title}
-                      company={job.companyName}
-                      location={job.location}
-                      type={job.type}
+                      role={fixEncoding(job.title)}
+                      company={fixEncoding(job.companyName)}
+                      location={fixEncoding(job.location)}
+                      type={fixEncoding(job.type)}
                       time={new Date(job.createdAt).toLocaleDateString()}
                       logo={job.companyLogo || job.logoUrl || job.logo_url}
                       acceptedCount={job.acceptedCount}
                       applicationCount={job.applicationCount} // New prop
                       interviewQuota={job.interviewQuota}
-                      description={job.description}
+                      description={fixEncoding(job.description)}
+
                       isSaved={job.isSaved}
                       isApplied={job.isApplied}
                       applicationStatus={job.applicationStatus}

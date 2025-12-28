@@ -1,13 +1,13 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { useState, useRef, useEffect } from "react";
-import { auth } from "../firebase";
-import { useAuth } from "../authContext";
-import Notifications from "./Notifications";
+import { auth } from "../../firebase";
+import { useAuth } from "../../authContext";
+import Notifications from "../common/Notifications";
 import { LogOut, User, ChevronDown, LayoutDashboard, Menu, X, Building, FileText, Bookmark, Calendar, CheckSquare, Video } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiFetch } from "../api/client";
-import { studentApi } from "../api/studentApi";
+import { apiFetch } from "../../api/client";
+import { studentApi } from "../../api/studentApi";
 
 function Navbar() {
 

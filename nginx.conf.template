@@ -1,0 +1,20 @@
+server {
+    listen       ${PORT};
+    server_name  localhost;
+
+    root   /usr/share/nginx/html;
+    index  index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy API requests to backend if needed, but usually we use absolute URLs or another load balancer in front.
+    # If the frontend calls the backend via full URL (as configured in .env), we don't strictly need a proxy here,
+    # but strictly ensuring CORS is handled correctly on backend is key.
+    
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}

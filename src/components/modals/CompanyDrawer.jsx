@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MapPin, Building, Globe, Mail, Briefcase, DollarSign, Clock, Bookmark, ArrowRight } from "lucide-react";
-import { studentApi } from "../api/studentApi";
+import { studentApi } from "../../api/studentApi";
 import toast from "react-hot-toast";
 
 export default function CompanyDrawer({ company, isOpen, onClose }) {

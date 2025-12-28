@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Bell, Check, X, Info, Briefcase, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiFetch } from "../api/client";
+import { apiFetch } from "../../api/client";
 
 export default function Notifications() {
     const [isOpen, setIsOpen] = useState(false);

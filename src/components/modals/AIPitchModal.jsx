@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Sparkles, AlertCircle, Copy, Check } from "lucide-react";
-import { apiFetch } from "../api/client";
-import { useAuth } from "../authContext";
+import { apiFetch } from "../../api/client";
+import { useAuth } from "../../authContext";
 
 export default function AIPitchModal({ isOpen, onClose }) {
     const { user } = useAuth();
