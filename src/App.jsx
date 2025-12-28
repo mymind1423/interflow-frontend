@@ -5,7 +5,7 @@ import Login from "./pages/auth/Login";
 import Dashboard from "./pages/student/Dashboard";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import SignupChoice from "./pages/auth/Signupchoice";
+import SignupChoice from "./pages/auth/SignupChoice";
 import SignupStudent from "./pages/auth/SignupStudentWizard";
 import SignupCompany from "./pages/auth/SignupCompanyWizard";
 import PrivateRoute from "./components/layout/PrivateRoute";
