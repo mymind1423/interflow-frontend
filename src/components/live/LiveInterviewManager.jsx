@@ -129,6 +129,28 @@ export default function LiveInterviewManager({ isFullScreen = false }) {
         }
     }, [activeInterview?.id]);
 
+    // Load Evaluation for History Modal
+    useEffect(() => {
+        if (viewingHistory?.studentId) {
+            setHistoryLoading(true);
+            companyApi.getEvaluation(viewingHistory.studentId)
+                .then(data => {
+                    if (data) {
+                        setViewingHistory(prev => ({
+                            ...prev,
+                            rating: data.rating || 0,
+                            comment: data.comment || ""
+                        }));
+                    }
+                })
+                .catch(e => {
+                    console.error("Could not load history notes", e);
+                    toast.error("Impossible de charger les notes");
+                })
+                .finally(() => setHistoryLoading(false));
+        }
+    }, [viewingHistory?.id]); // Depend on ID to trigger when opening a different history item
+
     // --- 2. TIMER ---
     useEffect(() => {
         let timerInterval;

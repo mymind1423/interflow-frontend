@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ChevronRight, Bookmark, MapPin, Briefcase, Clock, Calendar, Video, Sparkles, ArrowRight, Info, Users, AlertCircle } from "lucide-react";
+import { ChevronRight, Bookmark, MapPin, Briefcase, Clock, Calendar, Video, Sparkles, ArrowRight, Info, Users, AlertCircle, Loader2 } from "lucide-react";
 
 export function StatCard({ label, value, color, bg, icon: Icon, delay }) {
     // Extract color class (e.g. text-blue-500) to get the raw color for shadows if possible, 
@@ -46,7 +46,7 @@ export function SectionHeader({ title, link }) {
     );
 }
 
-export function OfferCard({ role, company, location, type, time, logo, acceptedCount, applicationCount, interviewQuota, description, onApply, onSave, isSaved, isApplied, applicationStatus, onClick }) {
+export function OfferCard({ role, company, location, type, time, logo, acceptedCount, applicationCount, interviewQuota, description, onApply, applyLoading, onSave, saveLoading, isSaved, isApplied, isInvited, wasInvited, applicationStatus, onClick }) {
     const isFull = acceptedCount !== undefined && interviewQuota !== undefined && acceptedCount >= interviewQuota;
     // Places Remaining now decrements per application (applicationCount) instead of just acceptedCount
     // This creates a sense of "spots left in the queue" or urgency for the student.
@@ -115,23 +115,28 @@ export function OfferCard({ role, company, location, type, time, logo, acceptedC
                 <div className="flex flex-row md:flex-col gap-2 shrink-0 w-full md:w-auto mt-2 md:mt-0">
                     {onApply && (
                         <button
-                            disabled={isApplied || isFull}
-                            onClick={(e) => { e.stopPropagation(); if (!isApplied && !isFull) onApply(); }}
-                            className={`flex-1 md:flex-none px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-lg active:scale-95 whitespace-nowrap ${isApplied
+                            disabled={isApplied || isFull || isInvited || applyLoading} // Disable if invited too
+                            onClick={(e) => { e.stopPropagation(); if (!isApplied && !isFull && !isInvited && !applyLoading) onApply(); }}
+                            className={`flex-1 md:flex-none px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-lg active:scale-95 whitespace-nowrap flex items-center justify-center gap-2 ${isApplied
                                 ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default shadow-none"
-                                : isFull
-                                    ? "bg-slate-800 text-slate-500 cursor-not-allowed shadow-none border border-white/5"
-                                    : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 hover:shadow-blue-600/40"
-                                }`}
+                                : isInvited
+                                    ? "bg-slate-700/50 text-slate-400 border border-slate-600/30 cursor-default shadow-none" // Grisé pour Invité
+                                    : isFull
+                                        ? "bg-slate-800 text-slate-500 cursor-not-allowed shadow-none border border-white/5"
+                                        : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 hover:shadow-blue-600/40"
+                                } ${applyLoading ? "opacity-80 cursor-wait" : ""}`}
                         >
-                            {isApplied ? (applicationStatus === 'ACCEPTED' || applicationStatus === 'INVITED' ? "Invité" : "Candidaté") : isFull ? "Complet" : "Postuler"}
+                            {applyLoading ? <Loader2 size={16} className="animate-spin" /> : (
+                                isApplied ? (wasInvited ? "Invitation Acceptée" : applicationStatus === 'ACCEPTED' ? "Accepté" : "Postulé") : isInvited ? "Invité" : isFull ? "Complet" : "Postuler"
+                            )}
                         </button>
                     )}
                     <button
-                        onClick={(e) => { e.stopPropagation(); if (onSave) onSave(); }}
+                        onClick={(e) => { e.stopPropagation(); if (onSave && !saveLoading) onSave(); }}
+                        disabled={saveLoading}
                         className={`self-end p-2 sm:p-2.5 rounded-xl transition-all border ${isSaved ? "bg-pink-500/10 text-pink-500 border-pink-500/20" : "bg-slate-800/50 text-slate-500 border-transparent hover:bg-slate-800 hover:text-white"}`}
                     >
-                        <Bookmark size={18} fill={isSaved ? "currentColor" : "none"} />
+                        {saveLoading ? <Loader2 size={18} className="animate-spin text-slate-400" /> : <Bookmark size={18} fill={isSaved ? "currentColor" : "none"} />}
                     </button>
                 </div>
             </div>

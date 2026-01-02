@@ -11,4 +11,8 @@ export const studentApi = {
     getSavedJobs: () => apiFetch("/api/student/saved-jobs"),
     getInterviews: () => apiFetch("/api/student/interviews"),
     deleteApplication: (id) => apiFetch("/api/student/applications/delete", { method: "POST", body: JSON.stringify({ id }) }),
+    // Live Interview
+    checkIn: (interviewId) => apiFetch(`/api/student/interviews/${interviewId}/check-in`, { method: "POST" }),
+    getNotifications: () => apiFetch("/api/student/notifications"), // Poll for "DELAYED" or "ENTER_ROOM"
+    getFeedback: (interviewId) => apiFetch(`/api/student/interviews/${interviewId}/feedback`),
 };

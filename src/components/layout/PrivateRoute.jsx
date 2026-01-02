@@ -15,6 +15,11 @@ function PrivateRoute({ children, allowedRoles }) {
     return <Navigate to="/pending-approval" replace />;
   }
 
+  // Handle users who are authenticated but haven't completed a profile yet (userType: 'unknown')
+  if (user.userType === "unknown") {
+    return <Navigate to="/signup" replace />;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user.userType)) {
     // Redirect to their respective dashboard based on type
     if (user.userType === "admin") return <Navigate to="/admin/dashboard" replace />;

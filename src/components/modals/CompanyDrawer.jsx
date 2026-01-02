@@ -157,16 +157,18 @@ export default function CompanyDrawer({ company, isOpen, onClose }) {
                                                     </button>
                                                     <button
                                                         onClick={() => {
-                                                            if (!job.isApplied) handleApply(job.id);
+                                                            if (!job.isApplied && !job.isInvited) handleApply(job.id);
                                                         }}
-                                                        disabled={job.isApplied}
+                                                        disabled={job.isApplied || job.isInvited}
                                                         className={`flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-lg ${job.isApplied
                                                             ? "bg-green-600/20 text-green-500 cursor-default shadow-none border border-green-600/20"
-                                                            : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
+                                                            : job.isInvited
+                                                                ? "bg-slate-700/50 text-slate-400 border border-slate-600/30 cursor-default shadow-none"
+                                                                : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
                                                             }`}
                                                     >
-                                                        {job.isApplied ? "Déjà postulé" : "Candidater"}
-                                                        {job.isApplied ? null : <ArrowRight size={16} />}
+                                                        {job.isApplied ? "Déjà postulé" : job.isInvited ? "Invité" : "Candidater"}
+                                                        {!job.isApplied && !job.isInvited && <ArrowRight size={16} />}
                                                     </button>
                                                 </div>
                                             </div>

@@ -1,20 +1,25 @@
 import { useState, useEffect } from "react";
 import { studentApi } from "../../api/studentApi";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, MessageSquare, Star, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function StudentInterviews() {
     const [interviews, setInterviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("ALL");
+    const [selectedFeedback, setSelectedFeedback] = useState(null);
+    const [feedbackLoading, setFeedbackLoading] = useState(false);
 
     const filteredInterviews = interviews.filter(int => {
         const matchesSearch = int.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             int.companyName.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const status = int.status ? int.status.toUpperCase() : "";
         const matchesStatus = filterStatus === "ALL" ||
-            (filterStatus === "SCHEDULED" && int.status === "SCHEDULED") ||
-            (filterStatus === "COMPLETED" && int.status === "COMPLETED"); // Add more statuses if needed
+            (filterStatus === "SCHEDULED" && status === "SCHEDULED") ||
+            (filterStatus === "COMPLETED" && status === "COMPLETED");
         return matchesSearch && matchesStatus;
     });
 
@@ -34,6 +39,23 @@ export default function StudentInterviews() {
         }
     };
 
+    const handleViewFeedback = async (interviewId) => {
+        setFeedbackLoading(interviewId);
+        try {
+            const feedback = await studentApi.getFeedback(interviewId);
+            if (feedback) {
+                setSelectedFeedback(feedback);
+            } else {
+                toast("Aucun feedback disponible pour le moment", { icon: "ℹ️" });
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Impossible de récupérer le feedback");
+        } finally {
+            setFeedbackLoading(false);
+        }
+    };
+
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
         return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -46,12 +68,12 @@ export default function StudentInterviews() {
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <Loader2 className="animate-spin text-blue-500 w-12 h-12" />
         </div>
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 relative">
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 flex items-center gap-3">
                 <Calendar className="text-blue-500" /> Mes Entretiens
             </h1>
@@ -87,12 +109,14 @@ export default function StudentInterviews() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredInterviews.map(int => {
+                        const status = int.status ? int.status.toUpperCase() : "";
                         const handleCalendar = () => {
                             const title = encodeURIComponent(`Entretien ${int.companyName} - ${int.title}`);
                             const details = encodeURIComponent(`Entretien pour le poste de ${int.title} chez ${int.companyName}.`);
                             const location = encodeURIComponent("Universite de djibouti, campus de balbala");
                             const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}`;
                             window.open(googleCalendarUrl, '_blank');
+                            toast.success("Redirection vers Google Agenda...");
                         };
 
                         return (
@@ -105,12 +129,14 @@ export default function StudentInterviews() {
                                 <div className="relative z-10 flex flex-col h-full">
                                     {/* Header */}
                                     <div className="flex justify-between items-start mb-6">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${int.status === 'SCHEDULED'
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${status === 'SCHEDULED'
                                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/20"
-                                            : "bg-slate-700/50 text-slate-400 border-slate-600/50"
+                                            : status === 'COMPLETED'
+                                                ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                                : "bg-slate-700/50 text-slate-400 border-slate-600/50"
                                             }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${int.status === 'SCHEDULED' ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
-                                            {int.status === 'SCHEDULED' ? 'Programmé' : int.status}
+                                            <span className={`w-1.5 h-1.5 rounded-full ${status === 'SCHEDULED' ? "bg-emerald-500 animate-pulse" : status === 'COMPLETED' ? "bg-blue-500" : "bg-slate-400"}`} />
+                                            {status === 'SCHEDULED' ? 'Programmé' : status === 'COMPLETED' ? 'Terminé' : status}
                                         </span>
                                         <div className="text-right">
                                             <p className="text-white font-bold font-mono text-base sm:text-lg leading-none">{formatTime(int.date)}</p>
@@ -156,19 +182,30 @@ export default function StudentInterviews() {
 
                                     {/* Actions */}
                                     <div className="flex gap-3">
-                                        <button
-                                            onClick={handleCalendar}
-                                            className="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-white/10 transition-all flex items-center justify-center gap-2 group/btn shadow-lg"
-                                        >
-                                            <Calendar size={16} className="text-slate-400 group-hover/btn:text-white transition-colors" />
-                                            Ajouter au calendrier
-                                        </button>
-                                        {/* {int.meetLink && int.meetLink.includes('http') && (
-                                            <a href={int.meetLink} target="_blank" rel="noreferrer" className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-900/20">
-                                                <Video size={16} />
-                                                Rejoindre
-                                            </a>
-                                        )} */}
+                                        {status === 'COMPLETED' ? (
+                                            <button
+                                                onClick={() => handleViewFeedback(int.id)}
+                                                disabled={feedbackLoading === int.id}
+                                                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm border border-blue-500/20 transition-all flex items-center justify-center gap-2 group/btn shadow-lg disabled:opacity-50"
+                                            >
+                                                {feedbackLoading === int.id ? (
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        <MessageSquare size={16} className="group-hover/btn:scale-110 transition-transform" />
+                                                        Voir Feedback
+                                                    </>
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={handleCalendar}
+                                                className="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-white/10 transition-all flex items-center justify-center gap-2 group/btn shadow-lg"
+                                            >
+                                                <Calendar size={16} className="text-slate-400 group-hover/btn:text-white transition-colors" />
+                                                Ajouter au calendrier
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -176,7 +213,80 @@ export default function StudentInterviews() {
                     })}
                 </div>
             )}
+
+            {/* Feedback Modal */}
+            <AnimatePresence>
+                {selectedFeedback && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedFeedback(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            className="relative bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 overflow-hidden z-10"
+                        >
+                            <div className="absolute top-4 right-4 z-10">
+                                <button
+                                    onClick={() => setSelectedFeedback(null)}
+                                    className="p-2 bg-slate-800 text-slate-400 rounded-full hover:bg-slate-700 hover:text-white transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <div className="text-center mb-8">
+                                <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-5 border border-blue-500/30 shadow-lg shadow-blue-500/10">
+                                    <Star size={40} className="text-blue-400 drop-shadow-md" />
+                                </div>
+                                <h3 className="text-2xl sm:text-3xl font-black text-white mb-2">Feedback</h3>
+                                <p className="text-slate-400 font-medium">Poste de {selectedFeedback.jobTitle || "Candidat"}</p>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="bg-slate-950 rounded-2xl p-5 border border-slate-800">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                        Note Globale
+                                    </label>
+                                    <div className="flex items-end gap-3">
+                                        <span className="text-5xl font-black text-white tracking-tight">{selectedFeedback.rating || selectedFeedback.score || "?"}</span>
+                                        <span className="text-xl text-slate-500 font-bold mb-1.5">/ 10</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-slate-900 rounded-full mt-4 overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full"
+                                            style={{ width: `${((selectedFeedback.rating || selectedFeedback.score || 0) / 10) * 100}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="bg-slate-950 rounded-2xl p-5 border border-slate-800">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 block">Commentaires</label>
+                                    <div className="max-h-40 overflow-y-auto custom-scrollbar">
+                                        <p className="text-slate-300 leading-relaxed text-sm font-medium">
+                                            "{selectedFeedback.comments || selectedFeedback.remarks || "Aucun commentaire fourni."}"
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 pt-6 border-t border-slate-800">
+                                <button
+                                    onClick={() => setSelectedFeedback(null)}
+                                    className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-4 rounded-xl transition-all hover:scale-[1.02] active:scale-95"
+                                >
+                                    Fermer
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
-

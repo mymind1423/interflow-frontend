@@ -22,7 +22,12 @@ export default function Notifications() {
         }
     };
 
+    // Use location to prevent fetching on signup pages
+    const location = window.location;
+
     useEffect(() => {
+        if (location.pathname.includes("/signup")) return;
+
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 60000); // Poll every minute
         return () => clearInterval(interval);

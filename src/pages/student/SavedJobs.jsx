@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { studentApi } from "../../api/studentApi";
-import { Bookmark, MapPin, Building, Briefcase, DollarSign, Clock, ArrowRight, Trash2 } from "lucide-react";
+import { Bookmark, MapPin, Building, Briefcase, DollarSign, Clock, ArrowRight, Trash2, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function SavedJobs() {
@@ -8,6 +8,8 @@ export default function SavedJobs() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState("ALL");
+    const [unsavingId, setUnsavingId] = useState(null);
+    const [applyingId, setApplyingId] = useState(null);
 
     const filteredJobs = jobs.filter(job => {
         const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -33,6 +35,7 @@ export default function SavedJobs() {
     };
 
     const handleUnsave = async (jobId) => {
+        setUnsavingId(jobId);
         try {
             const res = await studentApi.saveJob(jobId);
             if (res.saved === false) {
@@ -41,21 +44,31 @@ export default function SavedJobs() {
             }
         } catch (error) {
             toast.error("Erreur lors de la mise à jour");
+        } finally {
+            setUnsavingId(null);
         }
     };
 
     const handleApply = async (jobId) => {
+        setApplyingId(jobId);
         try {
             const res = await studentApi.apply(jobId);
-            if (res.error) toast.error(res.error);
-            else toast.success("Candidature envoyée avec succès ! 🚀");
+            if (res.error) {
+                toast.error(res.error);
+            } else {
+                toast.success("Candidature envoyée avec succès ! 🚀");
+                setJobs(prev => prev.map(job =>
+                    job.id === jobId ? { ...job, applicationStatus: 'PENDING' } : job
+                ));
+            }
         } catch (e) { toast.error("Une erreur est survenue"); }
+        finally { setApplyingId(null); }
     };
 
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                <Loader2 size={48} className="text-blue-500 animate-spin" />
             </div>
         );
     }
@@ -163,18 +176,31 @@ export default function SavedJobs() {
 
                                 <div className="flex flex-col gap-3 justify-center min-w-[160px] relative z-10 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6">
                                     <button
-                                        onClick={() => !isFull && handleApply(job.id)}
-                                        disabled={isFull}
-                                        className={`py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 ${isFull ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 hover:shadow-blue-600/40'}`}
+                                        onClick={() => !isFull && !job.applicationStatus && handleApply(job.id)}
+                                        disabled={isFull || !!job.applicationStatus || applyingId === job.id}
+                                        className={`py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed ${job.applicationStatus === 'ACCEPTED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default shadow-none' :
+                                            job.applicationStatus === 'INVITED' ? 'bg-slate-700/50 text-slate-400 border border-slate-600/30 cursor-default shadow-none' :
+                                                job.applicationStatus === 'REJECTED' || job.applicationStatus === 'REJECTED_QUOTA' ? 'bg-red-500/10 text-red-500 border border-red-500/20 cursor-default shadow-none' :
+                                                    job.applicationStatus === 'PENDING' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20 cursor-default shadow-none' :
+                                                        isFull ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none' :
+                                                            'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 hover:shadow-blue-600/40'
+                                            }`}
                                     >
-                                        {isFull ? "Entreprise complète" : "Candidater"}
-                                        {!isFull && <ArrowRight size={16} />}
+                                        {applyingId === job.id ? <Loader2 size={16} className="animate-spin" /> : <>
+                                            {job.applicationStatus === 'ACCEPTED' ? (job.wasInvited ? "Invitation Acceptée" : "Accepté") :
+                                                job.applicationStatus === 'INVITED' ? "Invité" :
+                                                    job.applicationStatus === 'REJECTED' || job.applicationStatus === 'REJECTED_QUOTA' ? "Refusé" :
+                                                        job.applicationStatus === 'PENDING' ? "Postulé" :
+                                                            isFull ? "Entreprise complète" : "Postuler"}
+                                            {!isFull && !job.applicationStatus && <ArrowRight size={16} />}
+                                        </>}
                                     </button>
                                     <button
                                         onClick={() => handleUnsave(job.id)}
-                                        className="bg-slate-800/50 hover:bg-pink-500/10 hover:text-pink-400 text-slate-400 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border border-transparent hover:border-pink-500/20"
+                                        disabled={unsavingId === job.id}
+                                        className="bg-slate-800/50 hover:bg-pink-500/10 hover:text-pink-400 text-slate-400 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border border-transparent hover:border-pink-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <Trash2 size={16} />
+                                        {unsavingId === job.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                         Retirer
                                     </button>
                                 </div>

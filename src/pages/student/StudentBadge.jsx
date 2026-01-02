@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { useAuth } from '../../authContext';
-import { QrCode, Share2, Download } from 'lucide-react';
+import { QrCode, Share2, Download, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { apiFetch } from '../../api/client';
 
 export default function StudentBadge() {
@@ -34,6 +35,7 @@ export default function StudentBadge() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        toast.success("Badge téléchargé avec succès !");
     };
 
     return (
@@ -79,7 +81,9 @@ export default function StudentBadge() {
                                 {qrDataUrl ? (
                                     <img src={qrDataUrl} alt="QR Code" className="w-48 h-48 opacity-90" />
                                 ) : (
-                                    <div className="w-48 h-48 bg-white/5 animate-pulse rounded-xl" />
+                                    <div className="w-48 h-48 bg-white/5 flex items-center justify-center rounded-xl">
+                                        <Loader2 className="animate-spin text-white/20" size={32} />
+                                    </div>
                                 )}
                             </div>
                             <p className="text-xs text-slate-400 text-center max-w-[200px] leading-relaxed">

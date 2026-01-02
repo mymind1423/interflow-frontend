@@ -72,19 +72,42 @@ const UpdatePrompt = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  if (isStandalone || !isMobile) return null;
+  /* Dismiss Logic */
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('install_dismissed')) {
+      setDismissed(true);
+    }
+  }, []);
+
+  if (isStandalone || !isMobile || dismissed) return null;
 
   return (
     <>
-      <button
-        onClick={handleInstallClick}
-        className="fixed bottom-6 left-6 z-50 bg-white text-blue-900 border border-blue-200 shadow-2xl rounded-full px-6 py-3 font-bold flex items-center gap-3 transition-transform hover:scale-105 active:scale-95 group"
-      >
-        <div className="bg-blue-600 text-white p-2 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="M6 8h.001" /><path d="M10 8h.001" /><path d="M14 8h.001" /><path d="M18 8h.001" /><path d="M8 12h.001" /><path d="M12 12h.001" /><path d="M16 12h.001" /><path d="M7 20h10" /></svg>
-        </div>
-        <span className="group-hover:text-blue-600 transition-colors">Installer l'App</span>
-      </button>
+      <div className="fixed bottom-6 left-6 z-50 flex flex-col items-end">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setDismissed(true);
+            localStorage.setItem('install_dismissed', 'true');
+          }}
+          className="absolute -top-2 -right-2 bg-slate-800 text-slate-400 hover:text-white rounded-full p-1 border border-slate-700 shadow-md z-10 transition-colors"
+          title="Fermer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+        </button>
+
+        <button
+          onClick={handleInstallClick}
+          className="bg-white text-blue-900 border border-blue-200 shadow-2xl rounded-full px-6 py-3 font-bold flex items-center gap-3 transition-transform hover:scale-105 active:scale-95 group relative overflow-hidden"
+        >
+          <div className="bg-blue-600 text-white p-2 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="M6 8h.001" /><path d="M10 8h.001" /><path d="M14 8h.001" /><path d="M18 8h.001" /><path d="M8 12h.001" /><path d="M12 12h.001" /><path d="M16 12h.001" /><path d="M7 20h10" /></svg>
+          </div>
+          <span className="group-hover:text-blue-600 transition-colors">Installer l'App</span>
+        </button>
+      </div>
 
       {/* Instructions Modal if Auto-Install not available */}
       {showInstructions && (

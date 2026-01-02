@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User, FileText, Shield, Upload, MapPin, Phone,
-  Briefcase, GraduationCap, Check, Camera, Building, Mail, Lock, AlertCircle, Sparkles, Trash2, Eye, EyeOff, ExternalLink
+  Briefcase, GraduationCap, Check, Camera, Building, Mail, Lock, AlertCircle, Sparkles, Trash2, Eye, EyeOff, ExternalLink, Loader2, Calendar
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -59,6 +59,7 @@ export default function ProfilePage() {
       const newProfile = { ...profile, ...updatedData };
       setProfile(newProfile); // Update UI optimistic
       await profileApi.update(newProfile);
+      await reloadUser(); // Sync with Navbar/Context
       toast.success("Profil mis à jour avec succès");
       setIsEditing(false);
     } catch (e) {
@@ -155,7 +156,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <Loader2 className="animate-spin text-blue-500 h-12 w-12" />
       </div>
     );
   }
@@ -402,6 +403,8 @@ function TabItem({ id, label, icon: Icon, active, onClick }) {
 }
 
 
+const grades = ["BAC", "BAC+2", "Licence", "Master", "Ingénieur", "Doctorat"];
+
 const facultiesData = {
   "Faculté de Droit, d'Économie et de Gestion (FDEG)": [
     "Droit et Gestion des Entreprises (DGE)",
@@ -450,6 +453,7 @@ const facultiesData = {
 function ProfileForm({ profile, isEditing, isStudent, onSave, onCancel }) {
   const [formData, setFormData] = useState(profile);
   const [availableDomains, setAvailableDomains] = useState([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (formData.faculty && facultiesData[formData.faculty]) {
@@ -469,9 +473,11 @@ function ProfileForm({ profile, isEditing, isStudent, onSave, onCancel }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
+    setSaving(true);
+    await onSave(formData);
+    setSaving(false);
   };
 
   return (
@@ -487,6 +493,26 @@ function ProfileForm({ profile, isEditing, isStudent, onSave, onCancel }) {
               icon={User}
               disabled={!isEditing}
             />
+
+            <div className="group">
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Date de Naissance</label>
+              <div className="relative">
+                <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${!isEditing ? "text-slate-500" : "text-slate-400"}`}>
+                  <Calendar size={18} />
+                </div>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData?.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ""}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  className={`w-full bg-slate-800/50 border rounded-xl pl-10 pr-4 py-3 text-white outline-none transition-all text-sm sm:text-base [color-scheme:dark] ${!isEditing
+                    ? "border-transparent bg-transparent pl-8"
+                    : "border-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50"
+                    }`}
+                />
+              </div>
+            </div>
 
             <div className="group">
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Faculté / Institut</label>
@@ -547,14 +573,34 @@ function ProfileForm({ profile, isEditing, isStudent, onSave, onCancel }) {
               </div>
             </div>
 
-            <InputField
-              label="Niveau d'étude"
-              name="grade"
-              value={formData?.grade}
-              onChange={handleChange}
-              icon={GraduationCap}
-              disabled={!isEditing}
-            />
+            <div className="group">
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Niveau d'étude</label>
+              <div className="relative">
+                <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${!isEditing ? "text-slate-500" : "text-slate-400"}`}>
+                  <GraduationCap size={18} />
+                </div>
+                {isEditing ? (
+                  <select
+                    name="grade"
+                    value={formData?.grade || ""}
+                    onChange={handleChange}
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white outline-none focus:border-blue-500 appearance-none text-sm sm:text-base"
+                  >
+                    <option value="">Sélectionner un niveau</option>
+                    {grades.map(g => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData?.grade || "Non renseigné"}
+                    disabled
+                    className="w-full bg-transparent border-transparent rounded-xl pl-10 pr-4 py-3 text-white text-sm sm:text-base"
+                  />
+                )}
+              </div>
+            </div>
           </>
         ) : (
           <>
@@ -583,7 +629,7 @@ function ProfileForm({ profile, isEditing, isStudent, onSave, onCancel }) {
           value={formData?.phone}
           onChange={handleChange}
           icon={Phone}
-          disabled={!isEditing}
+          disabled={true}
         />
         <InputField
           label="Adresse / Ville"
@@ -623,9 +669,10 @@ function ProfileForm({ profile, isEditing, isStudent, onSave, onCancel }) {
           </button>
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all font-medium flex items-center gap-2"
+            disabled={saving}
+            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Check size={18} /> Enregistrer
+            {saving ? <Loader2 size={18} className="animate-spin" /> : <><Check size={18} /> Enregistrer</>}
           </button>
         </div>
       )}
@@ -919,7 +966,7 @@ function SecurityTab() {
             disabled={loading}
             className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Mise à jour..." : "Mettre à jour le mot de passe"}
+            {loading ? <Loader2 size={20} className="animate-spin" /> : "Mettre à jour le mot de passe"}
           </button>
         </div>
       </form>

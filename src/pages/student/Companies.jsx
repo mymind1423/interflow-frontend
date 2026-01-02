@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { studentApi } from "../../api/studentApi";
-import { Search, MapPin, Building, Globe, Filter, ExternalLink } from "lucide-react";
+import { Search, MapPin, Building, Globe, Filter, ExternalLink, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import CompanyDrawer from "../../components/modals/CompanyDrawer";
 
@@ -68,7 +68,7 @@ export default function Companies() {
             {/* Content */}
             {loading ? (
                 <div className="flex-1 flex justify-center items-center">
-                    <div className="w-12 h-12 border-4 border-sky-500/30 border-t-sky-500 rounded-full animate-spin"></div>
+                    <Loader2 size={48} className="text-sky-500 animate-spin" />
                 </div>
             ) : filteredCompanies.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

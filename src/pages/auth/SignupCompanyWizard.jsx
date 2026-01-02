@@ -11,6 +11,7 @@ import {
   Briefcase, Mail, Lock, Globe, Eye, EyeOff
 } from "lucide-react";
 import { motion } from "framer-motion";
+import Recaptcha from "../../components/common/Recaptcha";
 
 const domaines = [
   "Informatique",
@@ -46,6 +47,7 @@ function SignupCompanyWizard() {
   const [logo, setLogo] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
 
   // Computed progress for custom stepper
   const progress = step === 1 ? '0%' : step === 2 ? '50%' : '100%';
@@ -89,6 +91,11 @@ function SignupCompanyWizard() {
     setError("");
     if (!logo) {
       setError("Le logo est obligatoire pour votre profil entreprise.");
+      return;
+    }
+
+    if (!recaptchaToken) {
+      setError("Veuillez valider le captcha.");
       return;
     }
 
@@ -376,6 +383,8 @@ function SignupCompanyWizard() {
                   </div>
                 </div>
 
+                <Recaptcha onChange={setRecaptchaToken} />
+
                 <div className="flex gap-4 pt-6">
                   <button
                     onClick={() => setStep(2)}
@@ -406,6 +415,3 @@ function SignupCompanyWizard() {
 }
 
 export default SignupCompanyWizard;
-
-
-

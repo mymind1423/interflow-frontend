@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastProvider } from "./context/ToastContext";
+import { Toaster } from "react-hot-toast";
 import Home from "./pages/shared/Home";
 import Login from "./pages/auth/Login";
 import Dashboard from "./pages/student/Dashboard";
@@ -22,14 +23,16 @@ import CompanyPlanning from "./pages/company/CompanyPlanning";
 import CompanyTalents from "./pages/company/CompanyTalents";
 import StudentBadge from "./pages/student/StudentBadge";
 import PublicProfile from "./pages/shared/PublicProfile";
-import LiveInterviewPage from "./pages/shared/LiveInterviewPage";
-import StudentInvitations from "./pages/student/StudentInvitations";
+import LiveInterviewDashboard from "./pages/company/LiveInterviewDashboard";
+import ActiveInterviewSession from "./pages/company/ActiveInterviewSession";
+import StudentLiveSpace from "./pages/student/StudentLiveSpace";
 import { AuthProvider } from "./authContext";
 
 function App() {
   return (
     <AuthProvider>
       <ToastProvider>
+        <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff', border: '1px solid #334155' } }} />
         <BrowserRouter>
           <Navbar />
           <Routes>
@@ -52,8 +55,8 @@ function App() {
               <Route path="/companies" element={<Companies />} />
               <Route path="/saved-jobs" element={<SavedJobs />} />
               <Route path="/interviews" element={<StudentInterviews />} />
-              <Route path="/invitations" element={<StudentInvitations />} />
               <Route path="/my-badge" element={<StudentBadge />} />
+              <Route path="/live" element={<StudentLiveSpace />} />
             </Route>
 
             <Route element={<PrivateRoute><StudentLayout /></PrivateRoute>}>
@@ -66,7 +69,8 @@ function App() {
               <Route path="/company-applications" element={<CompanyApplications />} />
               <Route path="/company-talents" element={<CompanyTalents />} />
               <Route path="/company-planning" element={<CompanyPlanning />} />
-              <Route path="/company/live" element={<LiveInterviewPage />} />
+              <Route path="/company/live" element={<LiveInterviewDashboard />} />
+              <Route path="/company/live/:id" element={<ActiveInterviewSession />} />
             </Route>
           </Routes>
           <Footer />

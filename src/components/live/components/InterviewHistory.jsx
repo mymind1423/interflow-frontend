@@ -26,6 +26,11 @@ export default function InterviewHistory({ historyInterviews, setViewingHistory 
                                 {i.status === 'COMPLETED' ? 'Terminé' : i.status}
                             </span>
                         </div>
+                        {i.comment && (
+                            <div className="mt-2 text-xs text-slate-400 italic line-clamp-2 border-t border-white/5 pt-2">
+                                "{i.comment}"
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

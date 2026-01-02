@@ -10,10 +10,10 @@ export function ScorecardModal({ showScorecard, scorecardData, setScorecardData,
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
                 <div className="bg-slate-900 p-8 rounded-2xl border border-slate-700 w-full max-w-lg shadow-2xl">
                     <h2 className="text-2xl font-bold text-white mb-6 text-center">Noter l'entretien</h2>
-                    <div className="flex justify-center gap-4 mb-8">
-                        {[1, 2, 3, 4, 5].map(s => (
+                    <div className="flex flex-wrap justify-center gap-2 mb-8">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(s => (
                             <button key={s} onClick={() => setScorecardData(p => ({ ...p, rating: s }))} className="hover:scale-110 transition-transform">
-                                <Star size={32} className={s <= scorecardData.rating ? "text-yellow-400 fill-yellow-400" : "text-slate-700"} />
+                                <Star size={24} className={s <= scorecardData.rating ? "text-yellow-400 fill-yellow-400" : "text-slate-700"} />
                             </button>
                         ))}
                     </div>
@@ -63,10 +63,10 @@ export function HistoryDetailModal({ viewingHistory, setViewingHistory, historyL
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
                                         <p className="text-xs text-slate-500 uppercase font-bold mb-2">Note Attribuée</p>
-                                        <div className="flex gap-1">
-                                            {[1, 2, 3, 4, 5].map(s => (
+                                        <div className="flex flex-wrap gap-1">
+                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(s => (
                                                 <button key={s} onClick={() => setViewingHistory(p => ({ ...p, rating: s }))}>
-                                                    <Star size={24} className={s <= (viewingHistory.rating || 0) ? "text-yellow-400 fill-yellow-400" : "text-slate-700"} />
+                                                    <Star size={20} className={s <= (viewingHistory.rating || 0) ? "text-yellow-400 fill-yellow-400" : "text-slate-700"} />
                                                 </button>
                                             ))}
                                         </div>
@@ -91,15 +91,20 @@ export function HistoryDetailModal({ viewingHistory, setViewingHistory, historyL
 
                                 <button
                                     onClick={async () => {
-                                        await companyApi.saveEvaluation({
-                                            studentId: viewingHistory.studentId,
-                                            rating: viewingHistory.rating,
-                                            comment: viewingHistory.comment
-                                        });
-                                        toast.success("Évaluation mise à jour");
-                                        if (loadInterviews) loadInterviews();
+                                        try {
+                                            await companyApi.saveEvaluation({
+                                                studentId: viewingHistory.studentId,
+                                                rating: viewingHistory.rating || null, // FIX: Send null if 0
+                                                comment: viewingHistory.comment
+                                            });
+                                            toast.success("✅ Modifications enregistrées !");
+                                            if (loadInterviews) loadInterviews();
+                                        } catch (error) {
+                                            console.error(error);
+                                            toast.error("❌ Erreur lors de la sauvegarde.");
+                                        }
                                     }}
-                                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm border border-slate-700"
+                                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm border border-slate-700 shadow-lg"
                                 >
                                     Sauvegarder les modifications
                                 </button>

@@ -11,8 +11,11 @@ import { auth } from "../../firebase";
 import StepIndicator from "../../components/common/StepIndicator";
 import StepTransition from "../../components/common/StepTransition";
 import { signupApi } from "../../api/signupApi";
+import { authApi } from "../../api/authApi";
+import { useToast } from "../../context/ToastContext";
 import { ArrowRight, ArrowLeft, Upload, Check, User, MapPin, Briefcase, Lock, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
+import Recaptcha from "../../components/common/Recaptcha";
 
 const provider = new GoogleAuthProvider();
 const facultiesData = {
@@ -79,24 +82,51 @@ function SignupStudentWizard() {
     faculty: "",
     domaine: "",
     grade: "",
+    dateOfBirth: "",
   });
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [cvFile, setCvFile] = useState(null);
   const [diplomaFile, setDiplomaFile] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+
+  const toast = useToast();
+
+  const { user, reloadUser } = useAuth(); // Destructuring user from useAuth() was missing before line 166
 
   useEffect(() => {
-    if (signupMethod === "google" && auth.currentUser) {
+    // If user is logged in via Google (even on refresh), prefill data
+    if (user && (signupMethod === "google" || user.incomplete)) {
       setForm((prev) => ({
         ...prev,
-        fullname: auth.currentUser.displayName || "",
-        email: auth.currentUser.email || "",
+        // Prioritize auth.currentUser because it might have the fresh Google profile data 
+        // that context hasn't synced yet (or context has "User" fallback from somewhere else)
+        fullname: auth.currentUser?.displayName || user.displayName || prev.fullname,
+        email: user.email || prev.email,
+        phone: prev.phone, // Keep manual inputs if any
       }));
-      setStep(2);
+      if (signupMethod === "google" || user.incomplete) {
+        // Only skip to step 2 if we actually have a name.
+        // If Google didn't provide a name, let user fill it in Step 1.
+        const effectiveName = auth.currentUser?.displayName || user.displayName;
+
+        if (effectiveName) {
+          setStep(2);
+        } else {
+          // Stay on Step 1 but mark method
+          setStep(1);
+        }
+
+        if (!signupMethod) {
+          localStorage.setItem("signupMethod", "google");
+          setSignupMethod("google");
+        }
+      }
     }
-  }, [signupMethod]);
+  }, [user, signupMethod]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -105,9 +135,22 @@ function SignupStudentWizard() {
   const handleGoogleSignup = async () => {
     try {
       await signInWithPopup(auth, provider);
+
+      // Check if account already exists
+      const check = await authApi.profileExists();
+      if (check.exists) {
+        toast.success("Compte existant. Connexion en cours...");
+
+        const userInfo = await authApi.getUserInfo();
+        if (userInfo.user_type === 'company') navigate("/company-dashboard");
+        else if (userInfo.user_type === 'admin') navigate("/admin/dashboard");
+        else navigate("/dashboard");
+        return;
+      }
+
       localStorage.setItem("signupMethod", "google");
       setSignupMethod("google");
-      setStep(2);
+      // The useEffect will pick it up and setStep(2) or 1
     } catch (err) {
       setError(err.message || "Connexion Google impossible");
     }
@@ -117,6 +160,10 @@ function SignupStudentWizard() {
     setError("");
     if (!form.fullname || !form.email || (!password && signupMethod !== 'google')) {
       setError("Bas les masques ! Il nous faut au moins un nom et un email.");
+      return;
+    }
+    if (signupMethod !== 'google' && password !== confirmPassword) {
+      setError("Les mots de passe ne correspondent pas.");
       return;
     }
     if (!isEmail(form.email)) {
@@ -144,8 +191,8 @@ function SignupStudentWizard() {
       setError("Numéro de téléphone invalide.");
       return;
     }
-    if (!form.address || !form.faculty || !form.domaine || !form.grade) {
-      setError("Dites-nous en plus sur votre parcours.");
+    if (!form.address || !form.faculty || !form.domaine || !form.grade || !form.dateOfBirth) {
+      setError("Dites-nous en plus sur votre parcours (et votre date de naissance).");
       return;
     }
 
@@ -163,32 +210,74 @@ function SignupStudentWizard() {
     }
   };
 
-  const { reloadUser } = useAuth();
+
+
+  const validateFile = (file) => {
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+      'image/webp',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    const maxSize = 5 * 1024 * 1024; // 5 Mo
+
+    if (!file) return { valid: false, error: "Fichier manquant." };
+    if (!allowedTypes.includes(file.type)) return { valid: false, error: `Format non supporté pour ${file.name} (PDF, Word, JPG, PNG uniquement).` };
+    if (file.size > maxSize) return { valid: false, error: `Le fichier ${file.name} est trop volumineux (Max 5Mo).` };
+    return { valid: true };
+  };
 
   const handleSubmit = async () => {
     setError("");
+
+    // 1. Validate files BEFORE creating any account
     if (!cvFile || !diplomaFile) {
       setError("Votre CV et votre Diplôme sont nécessaires pour valider votre profil.");
       return;
     }
 
+    const cvCheck = validateFile(cvFile);
+    if (!cvCheck.valid) {
+      setError(cvCheck.error);
+      return;
+    }
+
+    const diplomaCheck = validateFile(diplomaFile);
+    if (!diplomaCheck.valid) {
+      setError(diplomaCheck.error);
+      return;
+    }
+
+    if (!recaptchaToken) {
+      setError("Veuillez valider le captcha.");
+      return;
+    }
+
+    let userCreatedHere = false;
+    let user = auth.currentUser;
+
     try {
       setLoading(true);
 
-      let user;
-      if (!auth.currentUser) {
+      // 2. Create Authentication User if needed
+      if (!user) {
         const cred = await createUserWithEmailAndPassword(auth, form.email, password);
         user = cred.user;
+        userCreatedHere = true;
         await updateProfile(user, { displayName: form.fullname });
-      } else {
-        user = auth.currentUser;
       }
 
+      // 3. Upload Files
+      // Note: If connection drops here, we attempt to clean up the user.
       const cvRes = await signupApi.uploadCv(cvFile);
       const diplomaRes = await signupApi.uploadDiploma(diplomaFile);
 
-      if (!cvRes?.url || !diplomaRes?.url) throw new Error("Erreur upload fichiers.");
+      if (!cvRes?.url || !diplomaRes?.url) throw new Error("Erreur lors de l'upload des fichiers.");
 
+      // 4. Save Student Profile in Database
       const payload = {
         id: user.uid,
         email: form.email,
@@ -200,6 +289,7 @@ function SignupStudentWizard() {
         grade: form.grade,
         cvUrl: cvRes.url,
         diplomaUrl: diplomaRes.url,
+        dateOfBirth: form.dateOfBirth
       };
 
       await signupApi.signupStudent(payload);
@@ -208,8 +298,23 @@ function SignupStudentWizard() {
 
       localStorage.removeItem("signupMethod");
       navigate("/dashboard");
+
     } catch (err) {
       console.error(err);
+
+      // Cleanup: If we created the user just now and the process failed, delete the user
+      // so we don't end up with an orphan account/duplicate email issue next time.
+      if (userCreatedHere && user) {
+        try {
+          await user.delete();
+          console.warn("Orphan account deleted successfully due to signup failure.");
+        } catch (deleteErr) {
+          console.error("Failed to delete orphan account:", deleteErr);
+          // If this fails (e.g. network lost completely), the user remains created.
+          // This is a known limitation, but we handled the common cases.
+        }
+      }
+
       setError(err.message || "Une erreur est survenue lors de l'inscription.");
     } finally {
       setLoading(false);
@@ -286,25 +391,39 @@ function SignupStudentWizard() {
                 </div>
 
                 {signupMethod !== 'google' && (
-                  <div className="space-y-1 relative">
-                    <label className="text-sm font-medium text-slate-400">Mot de passe</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all pr-12"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors focus:outline-none"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
+                  <>
+                    <div className="space-y-1 relative">
+                      <label className="text-sm font-medium text-slate-400">Mot de passe</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all pr-12"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors focus:outline-none"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                    <div className="space-y-1 relative">
+                      <label className="text-sm font-medium text-slate-400">Confirmer mot de passe</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className={`w-full bg-slate-950 border rounded-xl px-4 py-3 text-white focus:ring-2 outline-none transition-all pr-12 ${password !== confirmPassword && confirmPassword ? "border-red-500 focus:ring-red-500/50" : "border-slate-800 focus:ring-blue-500/50"}`}
+                        />
+                      </div>
+                    </div>
+                  </>
                 )}
 
                 <div className="pt-4">
@@ -341,6 +460,18 @@ function SignupStudentWizard() {
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <MapPin className="text-blue-500" /> Parcours & Contact
                 </h2>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-400">Date de naissance</label>
+                  <input
+                    name="dateOfBirth"
+                    type="date"
+                    value={form.dateOfBirth}
+                    onChange={handleChange}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all [color-scheme:dark]"
+                  />
+                </div>
+
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-1">
@@ -436,7 +567,7 @@ function SignupStudentWizard() {
                 </h2>
 
                 <p className="text-sm text-slate-400">
-                  Fichiers acceptés: PDF, JPG, PNG (Max 5Mo).
+                  Fichiers acceptés: PDF, Word, JPG, PNG (Max 5Mo).
                 </p>
 
                 <div className="space-y-4">
@@ -446,7 +577,7 @@ function SignupStudentWizard() {
                     <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${cvFile ? "border-emerald-500/50 bg-emerald-500/5" : "border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/50"}`}>
                       <input
                         type="file"
-                        accept=".pdf,.png,.jpg,.jpeg"
+                        accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
                         onChange={(e) => setCvFile(e.target.files[0])}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
@@ -470,7 +601,7 @@ function SignupStudentWizard() {
                     <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${diplomaFile ? "border-emerald-500/50 bg-emerald-500/5" : "border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/50"}`}>
                       <input
                         type="file"
-                        accept=".pdf,.png,.jpg,.jpeg"
+                        accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
                         onChange={(e) => setDiplomaFile(e.target.files[0])}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
@@ -488,6 +619,8 @@ function SignupStudentWizard() {
                     </div>
                   </div>
                 </div>
+
+                <Recaptcha onChange={setRecaptchaToken} />
 
                 <div className="flex gap-4 pt-6">
                   <button
@@ -513,11 +646,8 @@ function SignupStudentWizard() {
           </StepTransition>
         </motion.div>
       </div>
-    </main>
+    </main >
   );
 }
 
 export default SignupStudentWizard;
-
-
-

@@ -29,13 +29,12 @@ export function AuthProvider({ children }) {
         for (let i = 0; i < retries; i++) {
           try {
             if (i > 0) {
-              // Petit délai avant retry
               await new Promise(resolve => setTimeout(resolve, delay));
             }
 
             const data = await authApi.getUserInfo();
-            const userType = (data.USER_TYPE || data.user_type || "").toLowerCase();
-            const status = (data.STATUS || data.status || "").toLowerCase();
+            const userType = (data.userType || data.USER_TYPE || data.user_type || "").toLowerCase();
+            const status = (data.status || data.STATUS || "").toLowerCase();
 
             setUser({
               uid: firebaseUser.uid,
@@ -44,15 +43,21 @@ export function AuthProvider({ children }) {
               photoURL: data.photoUrl || data.PHOTO_URL,
               userType,
               status,
+              incomplete: false
             });
             setError(null);
-            return; // Success, sortir
+            return;
           } catch (err) {
-            // Si c'est la dernière tentative ou une erreur différente de token invalide
             if (i === retries - 1 || (err.status !== 401 && !err.message.includes("token"))) {
-              // If Oracle user is missing, treat as not onboarded
+              // If Oracle user is missing, treating as "Incomplete Profile" NOT null.
               if (err.status === 403 || err.message === "User not found") {
-                setUser(null);
+                setUser({
+                  uid: firebaseUser.uid,
+                  email: firebaseUser.email,
+                  displayName: firebaseUser.displayName,
+                  userType: "unknown",
+                  incomplete: true
+                });
                 setError(null);
               } else {
                 console.error(`Failed to load user info (attempt ${i + 1}/${retries})`, err);
@@ -61,7 +66,6 @@ export function AuthProvider({ children }) {
               }
               return;
             }
-            // Sinon, on continue le retry
             console.log(`Token not ready, retrying... (${i + 1}/${retries})`);
           }
         }
@@ -92,8 +96,8 @@ export function AuthProvider({ children }) {
 
     try {
       const data = await authApi.getUserInfo();
-      const userType = (data.USER_TYPE || data.user_type || "").toLowerCase();
-      const status = (data.STATUS || data.status || "").toLowerCase();
+      const userType = (data.userType || data.USER_TYPE || data.user_type || "").toLowerCase();
+      const status = (data.status || data.STATUS || "").toLowerCase();
 
       setUser({
         uid: firebaseUser.uid,
@@ -102,11 +106,18 @@ export function AuthProvider({ children }) {
         photoURL: data.photoUrl || data.PHOTO_URL || firebaseUser.photoURL,
         userType,
         status,
+        incomplete: false
       });
       setError(null);
     } catch (err) {
       if (err.status === 403 || err.message === "User not found") {
-        setUser(null);
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          userType: "unknown",
+          incomplete: true
+        });
         setError(null);
       } else {
         console.error("Failed to load user info", err);
