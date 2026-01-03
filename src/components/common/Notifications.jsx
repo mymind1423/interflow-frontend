@@ -1,37 +1,16 @@
 import { useState, useRef, useEffect } from "react";
-import { Bell, Check, X, Info, Briefcase, Calendar } from "lucide-react";
+import { Bell, Check, X, Info, Briefcase, Calendar, CheckSquare, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiFetch } from "../../api/client";
+import { useNotifications } from "../../context/NotificationContext";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 export default function Notifications() {
+    const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(false);
-
     const wrapperRef = useRef(null);
-
-    const fetchNotifications = async () => {
-        try {
-            setLoading(true);
-            const data = await apiFetch("/api/notifications");
-            setNotifications(data || []);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Use location to prevent fetching on signup pages
-    const location = window.location;
-
-    useEffect(() => {
-        if (location.pathname.includes("/signup")) return;
-
-        fetchNotifications();
-        const interval = setInterval(fetchNotifications, 60000); // Poll every minute
-        return () => clearInterval(interval);
-    }, []);
+    const navigate = useNavigate();
 
     // Close on click outside
     useEffect(() => {
@@ -44,41 +23,35 @@ export default function Notifications() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [wrapperRef]);
 
-    const unreadCount = notifications.filter(n => !n.isRead).length;
-
-    const markAsRead = async (id) => {
-        try {
-            await apiFetch(`/api/notifications/${id}/read`, { method: "PUT" });
-            setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n));
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const markAllAsRead = async () => {
-        try {
-            await apiFetch("/api/notifications/read-all", { method: "PUT" });
-            setNotifications(notifications.map(n => ({ ...n, isRead: true })));
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const deleteNotification = async (id) => {
-        try {
-            await apiFetch(`/api/notifications/${id}`, { method: "DELETE" });
-            setNotifications(notifications.filter(n => n.id !== id));
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
     const getIcon = (type) => {
         switch (type) {
+            case "job":
             case "offer": return <Briefcase size={16} className="text-blue-400" />;
             case "interview": return <Calendar size={16} className="text-purple-400" />;
+            case "application": return <CheckSquare size={16} className="text-emerald-400" />;
+            case "invitation": return <Briefcase size={16} className="text-amber-400" />;
+            case "error": return <AlertCircle size={16} className="text-red-400" />;
             default: return <Info size={16} className="text-slate-400" />;
         }
+    };
+
+    const handleNotificationClick = async (notif) => {
+        if (!notif.isRead) {
+            await markAsRead(notif.id);
+        }
+
+        // Navigation Logic
+        if (notif.type === 'job' || notif.type === 'offer') {
+            navigate('/jobs');
+        } else if (notif.type === 'interview') {
+            navigate('/interviews');
+        } else if (notif.type === 'application') {
+            navigate('/applications');
+        } else if (notif.type === 'invitation') {
+            navigate('/saved-jobs'); // Invitations usually appear here or in applications
+        }
+
+        setIsOpen(false);
     };
 
     return (
@@ -114,7 +87,7 @@ export default function Notifications() {
                             )}
                         </div>
 
-                        <div className="max-h-[400px] overflow-y-auto">
+                        <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                             {notifications.length === 0 ? (
                                 <div className="p-8 text-center text-slate-500">
                                     <Bell size={32} className="mx-auto mb-3 opacity-20" />
@@ -125,7 +98,8 @@ export default function Notifications() {
                                     {notifications.map((notif) => (
                                         <div
                                             key={notif.id}
-                                            className={`p-4 hover:bg-slate-800/50 transition-colors relative group ${!notif.isRead ? "bg-blue-500/5" : ""}`}
+                                            onClick={() => handleNotificationClick(notif)}
+                                            className={`p-4 hover:bg-slate-800/50 transition-colors relative group cursor-pointer ${!notif.isRead ? "bg-blue-500/5" : ""}`}
                                         >
                                             <div className="flex gap-3 items-start">
                                                 <div className={`mt-1 p-2 rounded-lg bg-slate-800 border border-slate-700 shrink-0`}>
@@ -136,26 +110,15 @@ export default function Notifications() {
                                                         <h4 className={`text-sm font-medium ${notif.isRead ? "text-slate-300" : "text-white"}`}>
                                                             {notif.title}
                                                         </h4>
-                                                        <span className="text-xs text-slate-500 whitespace-nowrap">{notif.time}</span>
+                                                        <span className="text-xs text-slate-500 whitespace-nowrap">
+                                                            {localStorage.getItem('notification_date_' + notif.id) ||
+                                                                (notif.createdAt ? formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: fr }) : '')}
+                                                        </span>
                                                     </div>
                                                     <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
                                                         {notif.message}
                                                     </p>
-                                                    {!notif.isRead && (
-                                                        <button
-                                                            onClick={() => markAsRead(notif.id)}
-                                                            className="mt-2 text-xs font-medium text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                                                        >
-                                                            <Check size={12} /> Marquer comme lu
-                                                        </button>
-                                                    )}
                                                 </div>
-                                                <button
-                                                    onClick={() => deleteNotification(notif.id)}
-                                                    className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                                                >
-                                                    <X size={14} />
-                                                </button>
                                             </div>
                                             {!notif.isRead && (
                                                 <div className="absolute left-0 top-4 bottom-4 w-0.5 bg-blue-500 rounded-r-full" />

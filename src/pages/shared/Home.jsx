@@ -30,11 +30,12 @@ export default function Home() {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8">
-              Trouvez le stage <br />
+              Trouvez l'emploi <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-600">
                 qui lance votre avenir
               </span>
             </h1>
+
 
             <p className="max-w-2xl mx-auto text-lg text-slate-400 mb-10 leading-relaxed">
               Connectez-vous aux meilleures entreprises, gérez vos candidatures et boostez votre profil.
@@ -74,8 +75,9 @@ export default function Home() {
             <FeatureCard
               icon={Briefcase}
               title="Offres ciblées"
-              desc="Accédez à des milliers d'offres de stage et d'alternance sélectionnées pour vous."
+              desc="Accédez à des milliers d'offres d'emploi et d'alternance sélectionnées pour vous."
             />
+
             <FeatureCard
               icon={FileText}
               title="Candidature simplifiée"

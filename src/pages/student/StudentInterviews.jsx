@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { studentApi } from "../../api/studentApi";
-import { Calendar, MapPin, MessageSquare, Star, X, Loader2 } from "lucide-react";
+import { Calendar, MapPin, MessageSquare, Loader2, CheckCircle, Video, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -9,8 +9,8 @@ export default function StudentInterviews() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("ALL");
-    const [selectedFeedback, setSelectedFeedback] = useState(null);
     const [feedbackLoading, setFeedbackLoading] = useState(false);
+    const [checkInLoading, setCheckInLoading] = useState(null);
 
     const filteredInterviews = interviews.filter(int => {
         const matchesSearch = int.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,6 +25,9 @@ export default function StudentInterviews() {
 
     useEffect(() => {
         loadInterviews();
+        // Optional: polling for live status updates if needed
+        const interval = setInterval(loadInterviews, 60000);
+        return () => clearInterval(interval);
     }, []);
 
     const loadInterviews = async () => {
@@ -39,12 +42,53 @@ export default function StudentInterviews() {
         }
     };
 
+    const handleCheckIn = async (id) => {
+        setCheckInLoading(id);
+        try {
+            await studentApi.checkIn(id);
+            toast.success("Présence confirmée ! L'entreprise est notifiée.");
+            loadInterviews();
+        } catch (error) {
+            toast.error("Impossible de confirmer la présence (Trop tôt ?)");
+        } finally {
+            setCheckInLoading(null);
+        }
+    };
+
     const handleViewFeedback = async (interviewId) => {
         setFeedbackLoading(interviewId);
         try {
             const feedback = await studentApi.getFeedback(interviewId);
             if (feedback) {
-                setSelectedFeedback(feedback);
+                toast((t) => (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="min-w-[300px] bg-slate-900 border border-slate-700 p-4 rounded-xl shadow-2xl relative"
+                    >
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
+                                <MessageSquare size={18} />
+                            </div>
+                            <h4 className="font-bold text-white">Feedback Entretien</h4>
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center bg-slate-950 p-3 rounded-lg">
+                                <span className="text-xs font-bold text-slate-500 uppercase">Note</span>
+                                <span className="text-lg font-black text-white">{feedback.rating || feedback.score || "?"}/10</span>
+                            </div>
+                            <p className="text-sm text-slate-300 italic">
+                                "{feedback.remarks || feedback.comments || "Aucun commentaire."}"
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => toast.dismiss(t.id)}
+                            className="w-full mt-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold uppercase rounded-lg transition-colors"
+                        >
+                            Fermer
+                        </button>
+                    </motion.div>
+                ), { duration: 6000, style: { background: 'transparent', boxShadow: 'none' } });
             } else {
                 toast("Aucun feedback disponible pour le moment", { icon: "ℹ️" });
             }
@@ -73,11 +117,11 @@ export default function StudentInterviews() {
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 relative">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 relative pb-24">
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 flex items-center gap-3">
                 <Calendar className="text-blue-500" /> Mes Entretiens
             </h1>
-            <p className="text-slate-400 mb-6 sm:mb-8 text-sm sm:text-base">Consultez vos entretiens programmés avec les entreprises.</p>
+            <p className="text-slate-400 mb-6 sm:mb-8 text-sm sm:text-base">Consultez vos entretiens et confirmez votre présence.</p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <input
@@ -110,21 +154,11 @@ export default function StudentInterviews() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredInterviews.map(int => {
                         const status = int.status ? int.status.toUpperCase() : "";
-                        const handleCalendar = () => {
-                            const title = encodeURIComponent(`Entretien ${int.companyName} - ${int.title}`);
-                            const details = encodeURIComponent(`Entretien pour le poste de ${int.title} chez ${int.companyName}.`);
-                            const location = encodeURIComponent("Universite de djibouti, campus de balbala");
-                            const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}`;
-                            window.open(googleCalendarUrl, '_blank');
-                            toast.success("Redirection vers Google Agenda...");
-                        };
+                        const dateObj = new Date(int.date);
+                        const isToday = new Date().toDateString() === dateObj.toDateString();
 
                         return (
                             <div key={int.id} className="relative overflow-hidden bg-gradient-to-br from-emerald-900/40 to-slate-900/40 backdrop-blur-sm border border-emerald-500/20 rounded-3xl p-5 sm:p-6 group hover:border-emerald-500/40 transition-all hover:shadow-2xl hover:shadow-emerald-900/20 hover:-translate-y-1">
-                                {/* Background Pattern */}
-                                <div className="absolute top-0 right-0 p-4 opacity-30 group-hover:opacity-50 transition-opacity pointer-events-none">
-                                    <Calendar className="text-emerald-500" size={80} strokeWidth={1} style={{ opacity: 0.1, transform: 'rotate(15deg)' }} />
-                                </div>
 
                                 <div className="relative z-10 flex flex-col h-full">
                                     {/* Header */}
@@ -136,7 +170,7 @@ export default function StudentInterviews() {
                                                 : "bg-slate-700/50 text-slate-400 border-slate-600/50"
                                             }`}>
                                             <span className={`w-1.5 h-1.5 rounded-full ${status === 'SCHEDULED' ? "bg-emerald-500 animate-pulse" : status === 'COMPLETED' ? "bg-blue-500" : "bg-slate-400"}`} />
-                                            {status === 'SCHEDULED' ? 'Programmé' : status === 'COMPLETED' ? 'Terminé' : status}
+                                            {status === 'SCHEDULED' ? (isToday ? "Aujourd'hui" : "Programmé") : status === 'COMPLETED' ? 'Terminé' : status}
                                         </span>
                                         <div className="text-right">
                                             <p className="text-white font-bold font-mono text-base sm:text-lg leading-none">{formatTime(int.date)}</p>
@@ -181,12 +215,12 @@ export default function StudentInterviews() {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex gap-3">
+                                    <div className="flex flex-col gap-3">
                                         {status === 'COMPLETED' ? (
                                             <button
                                                 onClick={() => handleViewFeedback(int.id)}
                                                 disabled={feedbackLoading === int.id}
-                                                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm border border-blue-500/20 transition-all flex items-center justify-center gap-2 group/btn shadow-lg disabled:opacity-50"
+                                                className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm border border-blue-500/20 transition-all flex items-center justify-center gap-2 group/btn shadow-lg disabled:opacity-50"
                                             >
                                                 {feedbackLoading === int.id ? (
                                                     <Loader2 size={16} className="animate-spin" />
@@ -198,13 +232,38 @@ export default function StudentInterviews() {
                                                 )}
                                             </button>
                                         ) : (
-                                            <button
-                                                onClick={handleCalendar}
-                                                className="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-white/10 transition-all flex items-center justify-center gap-2 group/btn shadow-lg"
-                                            >
-                                                <Calendar size={16} className="text-slate-400 group-hover/btn:text-white transition-colors" />
-                                                Ajouter au calendrier
-                                            </button>
+                                            <>
+                                                {/* CHECK-IN BUTTON */}
+                                                {!int.checkedIn ? (
+                                                    <button
+                                                        onClick={() => handleCheckIn(int.id)}
+                                                        disabled={checkInLoading === int.id || status !== 'SCHEDULED'} // Allow check-in only if scheduled (logic can be refined)
+                                                        className="w-full py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-green-600/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {checkInLoading === int.id ? (
+                                                            <Loader2 size={16} className="animate-spin" />
+                                                        ) : (
+                                                            <><CheckCircle size={16} /> Je suis là (Check-in)</>
+                                                        )}
+                                                    </button>
+                                                ) : (
+                                                    <div className="w-full py-3 bg-green-500/10 border border-green-500/20 text-green-500 rounded-xl font-bold text-xs text-center uppercase tracking-widest flex items-center justify-center gap-2">
+                                                        <CheckCircle size={16} /> Présence Validée
+                                                    </div>
+                                                )}
+
+                                                {int.meetLink && (
+                                                    <a
+                                                        href={int.meetLink}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        onClick={() => toast.success("Ouverture de la salle virtuelle...")}
+                                                        className={`w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-2 ${!int.checkedIn ? 'opacity-50 pointer-events-none' : ''}`}
+                                                    >
+                                                        <Video size={16} /> Rejoindre Visio
+                                                    </a>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>
@@ -213,80 +272,6 @@ export default function StudentInterviews() {
                     })}
                 </div>
             )}
-
-            {/* Feedback Modal */}
-            <AnimatePresence>
-                {selectedFeedback && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setSelectedFeedback(null)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
-                        />
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="relative bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-8 overflow-hidden z-10"
-                        >
-                            <div className="absolute top-4 right-4 z-10">
-                                <button
-                                    onClick={() => setSelectedFeedback(null)}
-                                    className="p-2 bg-slate-800 text-slate-400 rounded-full hover:bg-slate-700 hover:text-white transition-colors"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
-
-                            <div className="text-center mb-8">
-                                <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-5 border border-blue-500/30 shadow-lg shadow-blue-500/10">
-                                    <Star size={40} className="text-blue-400 drop-shadow-md" />
-                                </div>
-                                <h3 className="text-2xl sm:text-3xl font-black text-white mb-2">Feedback</h3>
-                                <p className="text-slate-400 font-medium">Poste de {selectedFeedback.jobTitle || "Candidat"}</p>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div className="bg-slate-950 rounded-2xl p-5 border border-slate-800">
-                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 block flex items-center gap-2">
-                                        Note Globale
-                                    </label>
-                                    <div className="flex items-end gap-3">
-                                        <span className="text-5xl font-black text-white tracking-tight">{selectedFeedback.rating || selectedFeedback.score || "?"}</span>
-                                        <span className="text-xl text-slate-500 font-bold mb-1.5">/ 10</span>
-                                    </div>
-                                    <div className="w-full h-2 bg-slate-900 rounded-full mt-4 overflow-hidden">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full"
-                                            style={{ width: `${((selectedFeedback.rating || selectedFeedback.score || 0) / 10) * 100}%` }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="bg-slate-950 rounded-2xl p-5 border border-slate-800">
-                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 block">Commentaires</label>
-                                    <div className="max-h-40 overflow-y-auto custom-scrollbar">
-                                        <p className="text-slate-300 leading-relaxed text-sm font-medium">
-                                            "{selectedFeedback.comments || selectedFeedback.remarks || "Aucun commentaire fourni."}"
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 pt-6 border-t border-slate-800">
-                                <button
-                                    onClick={() => setSelectedFeedback(null)}
-                                    className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-4 rounded-xl transition-all hover:scale-[1.02] active:scale-95"
-                                >
-                                    Fermer
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }

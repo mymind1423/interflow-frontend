@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Recaptcha from "../../components/common/Recaptcha";
+import Tooltip from "../../components/ui/Tooltip";
+import { Info } from "lucide-react";
 
 const domaines = [
   "Informatique",
@@ -196,7 +198,12 @@ function SignupCompanyWizard() {
 
                   {/* Company Name */}
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Nom de l'entreprise</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Nom de l'entreprise</label>
+                      <Tooltip content="Le nom légal de votre structure">
+                        <Info size={14} className="text-slate-600 hover:text-slate-400 cursor-help" />
+                      </Tooltip>
+                    </div>
                     <div className="relative">
                       <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                       <input
@@ -308,7 +315,12 @@ function SignupCompanyWizard() {
 
                   {/* Description (Optional) */}
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Brève Description</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Brève Description</label>
+                      <Tooltip content="Sera visible par les candidats sur votre profil">
+                        <Info size={14} className="text-slate-600 hover:text-slate-400 cursor-help" />
+                      </Tooltip>
+                    </div>
                     <textarea
                       name="description"
                       rows="3"

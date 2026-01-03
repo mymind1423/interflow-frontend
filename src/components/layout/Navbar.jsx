@@ -3,8 +3,9 @@ import { signOut } from "firebase/auth";
 import { useState, useRef, useEffect } from "react";
 import { auth } from "../../firebase";
 import { useAuth } from "../../authContext";
+import { useNotifications } from "../../context/NotificationContext";
 import Notifications from "../common/Notifications";
-import { LogOut, User, ChevronDown, LayoutDashboard, Menu, X, Building, FileText, Bookmark, Calendar, CheckSquare, Video } from "lucide-react";
+import { LogOut, User, ChevronDown, LayoutDashboard, Menu, X, Building, FileText, Bookmark, Calendar, CheckSquare, Video, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../../api/client";
 import { studentApi } from "../../api/studentApi";
@@ -13,7 +14,9 @@ import ConfirmationModal from "../common/ConfirmationModal";
 function Navbar() {
 
   /* ... inside Navbar ... */
+  /* ... inside Navbar ... */
   const { user } = useAuth();
+  const { notifications } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const [profile, setProfile] = useState(null);
@@ -23,6 +26,23 @@ function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const tokenDropdownRef = useRef(null); // Ref for token dropdown
+
+  useEffect(() => {
+    // Click outside handler
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+      if (tokenDropdownRef.current && !tokenDropdownRef.current.contains(event.target)) {
+        setIsTokenDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     // Don't fetch profile if we are in the middle of a signup wizard
@@ -135,11 +155,11 @@ function Navbar() {
       { path: "/profile", label: "Profil", icon: Building },
     ] : [
       { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { path: "/jobs", label: "Offres", icon: Briefcase },
       { path: "/applications", label: "Candidatures", icon: FileText },
       { path: "/interviews", label: "Entretiens", icon: Calendar },
       { path: "/saved-jobs", label: "Favoris", icon: Bookmark },
-      { path: "/companies", label: "Entreprises", icon: Building },
-      { path: "/live", label: "Espace Live", icon: Video },
+      { path: "/profile", label: "Profil", icon: User },
     ]
   ) : [];
 
@@ -175,6 +195,27 @@ function Navbar() {
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
+                  {/* Badge logic: 'job' -> Offres, 'application' -> Candidatures, 'interview' -> Entretiens */}
+                  {(() => {
+                    let count = 0;
+                    if (link.label === "Offres") {
+                      count = notifications.filter(n => !n.isRead && (n.type === 'job' || n.type === 'offer')).length;
+                    } else if (link.label === "Candidatures") {
+                      count = notifications.filter(n => !n.isRead && n.type === 'application').length;
+                    } else if (link.label === "Entretiens") {
+                      count = notifications.filter(n => !n.isRead && n.type === 'interview').length;
+                    } else if (link.label === "Entreprises") {
+                      count = notifications.filter(n => !n.isRead && n.type === 'company_signup').length;
+                    } else if (link.label === "Étudiants") {
+                      count = notifications.filter(n => !n.isRead && n.type === 'student_signup').length;
+                    }
+
+                    return count > 0 && (
+                      <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-slate-900 shadow-md animate-in zoom-in duration-300">
+                        {count > 9 ? '9+' : count}
+                      </span>
+                    );
+                  })()}
                   <span className="relative flex items-center gap-2">
                     <link.icon size={16} />
                     {link.label}
@@ -393,13 +434,34 @@ function Navbar() {
                         key={link.path}
                         to={link.path}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-all ${isActive(link.path)
+                        className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium transition-all relative ${isActive(link.path)
                           ? "bg-blue-600/10 text-blue-400 border border-blue-600/20"
                           : "text-slate-400 hover:bg-slate-900 hover:text-white"
                           }`}
                       >
                         <link.icon size={20} />
                         {link.label}
+                        {/* Mobile Badge Logic */}
+                        {(() => {
+                          let count = 0;
+                          if (link.label === "Offres") {
+                            count = notifications.filter(n => !n.isRead && (n.type === 'job' || n.type === 'offer')).length;
+                          } else if (link.label === "Candidatures") {
+                            count = notifications.filter(n => !n.isRead && n.type === 'application').length;
+                          } else if (link.label === "Entretiens") {
+                            count = notifications.filter(n => !n.isRead && n.type === 'interview').length;
+                          } else if (link.label === "Entreprises") {
+                            count = notifications.filter(n => !n.isRead && n.type === 'company_signup').length;
+                          } else if (link.label === "Étudiants") {
+                            count = notifications.filter(n => !n.isRead && n.type === 'student_signup').length;
+                          }
+
+                          return count > 0 && (
+                            <span className="absolute top-3 right-4 flex items-center justify-center min-w-[20px] h-[20px] px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full shadow-sm">
+                              {count > 9 ? '9+' : count}
+                            </span>
+                          );
+                        })()}
                       </Link>
                     ))}
 

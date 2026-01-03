@@ -21,4 +21,5 @@ export const companyApi = {
     getProfile: () => apiFetch("/api/profile/get"),
     getTalents: () => apiFetch("/api/company/talents"),
     inviteStudent: (studentId, jobId) => apiFetch("/api/company/invite", { method: "POST", body: JSON.stringify({ studentId, jobId }) }),
+    getStudentInterviews: (studentId) => apiFetch(`/api/company/student-interviews/${studentId}`),
 };

@@ -5,6 +5,8 @@ import toast from "react-hot-toast";
 import LiveInterviewManager from "../../components/live/LiveInterviewManager";
 import Skeleton from "../../components/common/Skeleton";
 import { Link } from "react-router-dom";
+import "driver.js/dist/driver.css";
+import { driver } from "driver.js";
 
 export default function CompanyDashboard() {
     const [activeTab, setActiveTab] = useState("jobs");
@@ -22,6 +24,76 @@ export default function CompanyDashboard() {
     useEffect(() => {
         loadData();
     }, []);
+
+    useEffect(() => {
+        if (!loading && !localStorage.getItem('company_tour_completed')) {
+            const driverObj = driver({
+                showProgress: true,
+                animate: true,
+                doneBtnText: "C'est parti !",
+                nextBtnText: "Suivant",
+                prevBtnText: "Précédent",
+                steps: [
+                    {
+                        element: '#tour-stats',
+                        popover: {
+                            title: 'Vos Statistiques',
+                            description: 'Suivez en un coup d\'œil vos places restantes, candidatures et taux de conversion.',
+                            side: "bottom",
+                            align: 'start'
+                        }
+                    },
+                    {
+                        element: '#tour-create-offer',
+                        popover: {
+                            title: 'Gérez vos Offres',
+                            description: 'Créez ou modifiez votre offre de stage ici. Vous avez droit à une offre active à la fois.',
+                            side: "left",
+                            align: 'start'
+                        }
+                    },
+                    {
+                        element: jobs.length === 0 ? '#tour-create-offer-empty' : '#tour-create-offer', // Fallback
+                        popover: {
+                            title: 'Création d\'offre',
+                            description: 'C\'est ici que tout commence ! Cliquez pour publier votre annonce.',
+                            side: "top",
+                            align: 'center'
+                        }
+                    },
+                    {
+                        element: '#tour-tabs',
+                        popover: {
+                            title: 'Navigation',
+                            description: 'Basculez entre vos offres et les candidatures reçues.',
+                            side: "bottom",
+                            align: 'start'
+                        }
+                    },
+                    {
+                        element: '#tour-live-manager',
+                        popover: {
+                            title: 'Live Manager',
+                            description: 'Le jour J, cliquez ici pour accéder à vos entretiens en direct !',
+                            side: "bottom",
+                            align: 'end'
+                        }
+                    }
+                ],
+                onDestroyed: () => {
+                    localStorage.setItem('company_tour_completed', 'true');
+                    toast.success("Bon recrutement ! 🚀");
+                    // Force remove overlay in case of glitches
+                    document.body.classList.remove("driver-active", "driver-fade");
+                }
+            });
+
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                driverObj.drive();
+            }, 1000);
+        }
+    }, [loading]);
 
     const loadData = async () => {
         try {
@@ -89,7 +161,7 @@ export default function CompanyDashboard() {
         { label: "Total Candidatures", value: applications.length, icon: Users, color: "purple", bg: "bg-purple-500/10", text: "text-purple-500" },
         {
             label: "Taux de conversion",
-            value: applications.length > 0 ? `${Math.round((applications.filter(a => a.status === 'ACCEPTED').length / applications.length) * 100)}%` : "0%",
+            value: applications.length > 0 ? `${Math.round((applications.filter(a => a.status === 'ACCEPTED').length / applications.length) * 100)}% ` : "0%",
             icon: TrendingUp,
             color: "emerald",
             bg: "bg-emerald-500/10",
@@ -108,6 +180,7 @@ export default function CompanyDashboard() {
                 <div className="flex gap-3 w-full md:w-auto overflow-x-auto md:overflow-visible pb-2 md:pb-0">
                     <Link
                         to="/company/live"
+                        id="tour-live-manager"
                         className="bg-slate-800 hover:bg-slate-700 text-white px-4 sm:px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold transition-all border border-slate-700 hover:border-red-500/50 group whitespace-nowrap"
                     >
                         <Activity size={20} className="text-red-500 group-hover:animate-pulse" />
@@ -115,6 +188,7 @@ export default function CompanyDashboard() {
                     </Link>
                     {activeTab === "jobs" && !loading && (
                         <button
+                            id="tour-create-offer"
                             onClick={() => {
                                 if (jobs.length > 0) {
                                     setNewJob(jobs[0]);
@@ -133,7 +207,7 @@ export default function CompanyDashboard() {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div id="tour-stats" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 {loading
                     ? Array(4).fill(0).map((_, i) => (
                         <div key={i} className="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex items-center gap-5">
@@ -158,7 +232,7 @@ export default function CompanyDashboard() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 p-1 bg-slate-900/50 rounded-xl w-full md:w-fit mb-8 border border-slate-800 backdrop-blur-sm overflow-x-auto no-scrollbar">
+            <div id="tour-tabs" className="flex gap-1 p-1 bg-slate-900/50 rounded-xl w-full md:w-fit mb-8 border border-slate-800 backdrop-blur-sm overflow-x-auto no-scrollbar">
                 <button
                     onClick={() => setActiveTab("jobs")}
                     className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === "jobs" ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-900/20" : "text-slate-400 hover:text-white hover:bg-slate-800/50"}`}
@@ -253,7 +327,7 @@ export default function CompanyDashboard() {
                                             <div className="flex flex-col gap-1 w-full max-w-[50%]">
                                                 <div className="flex justify-between items-center text-xs font-bold text-slate-400">
                                                     <span>Places Restantes</span>
-                                                    <span className={`${Math.max(0, (job.interviewQuota || 10) - (job.applicationCount || 0)) <= 2 ? 'text-red-400 animate-pulse' : 'text-emerald-400'}`}>
+                                                    <span className={`${Math.max(0, (job.interviewQuota || 10) - (job.applicationCount || 0)) <= 2 ? 'text-red-400 animate-pulse' : 'text-emerald-400'} `}>
                                                         {Math.max(0, (job.interviewQuota || 10) - (job.applicationCount || 0))}
                                                     </span>
                                                 </div>
@@ -310,6 +384,7 @@ export default function CompanyDashboard() {
                             {/* Single Offer Constraint: Only show create button if NO jobs exist */}
                             {jobs.length === 0 && (
                                 <button
+                                    id="tour-create-offer-empty"
                                     onClick={() => setShowNewJobModal(true)}
                                     className="group border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-500 hover:text-indigo-500 hover:bg-indigo-500/5 transition-all min-h-[300px]"
                                 >
@@ -348,7 +423,8 @@ export default function CompanyDashboard() {
                                     <div className={`absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[100px] opacity-20 transition-colors duration-500 pointer-events-none 
                         ${app.status === 'ACCEPTED' ? 'bg-emerald-500' :
                                             app.status === 'REJECTED' ? 'bg-red-500' :
-                                                'bg-blue-600'}`}>
+                                                'bg-blue-600'
+                                        }`}>
                                     </div>
 
                                     <div className="relative z-10 flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
@@ -358,7 +434,8 @@ export default function CompanyDashboard() {
                                                 <div className={`w-16 h-16 rounded-2xl overflow-hidden border-2 shadow-lg transition-colors duration-300 
                                     ${app.status === 'ACCEPTED' ? 'border-emerald-500/50 shadow-emerald-500/20' :
                                                         app.status === 'REJECTED' ? 'border-red-500/50 shadow-red-500/20' :
-                                                            'border-blue-500/50 shadow-blue-500/20'}`}>
+                                                            'border-blue-500/50 shadow-blue-500/20'
+                                                    }`}>
                                                     {app.applicantPhoto ? (
                                                         <img src={app.applicantPhoto} alt="" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
                                                     ) : (
@@ -371,7 +448,8 @@ export default function CompanyDashboard() {
                                                 <div className={`absolute -bottom-2 -right-2 w-6 h-6 rounded-full border-2 border-slate-900 flex items-center justify-center text-white shadow-sm
                                     ${app.status === 'ACCEPTED' ? 'bg-emerald-500' :
                                                         app.status === 'REJECTED' ? 'bg-red-500' :
-                                                            'bg-amber-500'}`}>
+                                                            'bg-amber-500'
+                                                    }`}>
                                                     {app.status === 'ACCEPTED' ? <CheckCircle size={12} strokeWidth={3} /> :
                                                         app.status === 'REJECTED' ? <XCircle size={12} strokeWidth={3} /> :
                                                             <Clock size={12} strokeWidth={3} />}
@@ -448,7 +526,8 @@ export default function CompanyDashboard() {
                                                     {app.status !== 'PENDING' && (
                                                         <span className={`px-4 py-2 rounded-xl font-bold text-sm border flex items-center gap-2 whitespace-nowrap
                                             ${app.status === 'ACCEPTED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                                                                'bg-red-500/10 border-red-500/20 text-red-500'}`}>
+                                                                'bg-red-500/10 border-red-500/20 text-red-500'
+                                                            }`}>
                                                             {app.status === 'ACCEPTED' ? <CheckCircle size={16} /> : <XCircle size={16} />}
                                                             {app.status === 'ACCEPTED' ? 'Accepté' : 'Refusé'}
                                                         </span>
@@ -529,7 +608,8 @@ export default function CompanyDashboard() {
                                 ) : (
                                     <div className={`w-full py-3 rounded-xl font-bold text-base border flex items-center justify-center gap-2
                                         ${viewingApp.status === 'ACCEPTED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                                            'bg-red-500/10 border-red-500/20 text-red-500'}`}>
+                                            'bg-red-500/10 border-red-500/20 text-red-500'
+                                        }`}>
                                         {viewingApp.status === 'ACCEPTED' ? <CheckCircle size={20} /> : <XCircle size={20} />}
                                         {viewingApp.status === 'ACCEPTED' ? 'Candidature Acceptée' : 'Candidature Refusée'}
                                     </div>

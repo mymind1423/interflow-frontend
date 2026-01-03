@@ -15,4 +15,6 @@ export const studentApi = {
     checkIn: (interviewId) => apiFetch(`/api/student/interviews/${interviewId}/check-in`, { method: "POST" }),
     getNotifications: () => apiFetch("/api/student/notifications"), // Poll for "DELAYED" or "ENTER_ROOM"
     getFeedback: (interviewId) => apiFetch(`/api/student/interviews/${interviewId}/feedback`),
+    getProfile: () => apiFetch("/api/profile/get"),
 };
+

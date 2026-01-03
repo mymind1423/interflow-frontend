@@ -22,7 +22,8 @@ export default function Footer() {
                         </Link>
                         <p className="text-slate-400 text-sm leading-relaxed">
                             La plateforme numéro 1 pour connecter les étudiants talentueux aux meilleures entreprises. <br />
-                            Simplifiez vos recrutements et vos recherches de stage.
+                            Simplifiez vos recrutements et vos recherches d'emploi.
+
                         </p>
                         <div className="flex gap-4">
                             <SocialIcon icon={Facebook} href="#" />

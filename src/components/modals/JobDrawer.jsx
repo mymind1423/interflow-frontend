@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Briefcase, Clock, DollarSign, Building, Loader2 } from "lucide-react";
+import { X, MapPin, Bookmark, Briefcase, Clock, DollarSign, Building, Loader2 } from "lucide-react";
 
 export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApply, onSave, isApplying, isSaving }) {
     const isFull = job && job.acceptedCount !== undefined && job.interviewQuota !== undefined && job.acceptedCount >= job.interviewQuota;
@@ -110,7 +110,10 @@ export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApp
                                     onClick={() => canApply && onApply(job.id)}
                                     disabled={!canApply || isApplying}
                                     className={`flex-1 py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2 ${job.isApplied
-                                        ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/50 cursor-default shadow-none"
+                                        ? (job.status === 'ACCEPTED' ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/50 cursor-default shadow-none"
+                                            : job.status === 'REJECTED' ? "bg-red-500/10 text-red-400 border border-red-500/50 cursor-default shadow-none"
+                                                : job.wasInvited ? "bg-purple-500/10 text-purple-400 border border-purple-500/50 cursor-default shadow-none"
+                                                    : "bg-blue-500/10 text-blue-400 border border-blue-500/50 cursor-default shadow-none")
                                         : job.isInvited
                                             ? "bg-slate-700/50 text-slate-400 border border-slate-600/30 cursor-default shadow-none"
                                             : isFull
@@ -119,11 +122,14 @@ export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApp
                                                     ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5"
                                                     : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
                                         }`}
+
                                 >
                                     {isApplying ? (
                                         <><Loader2 size={18} className="animate-spin" /> Envoi en cours...</>
                                     ) : job.isApplied ? (
-                                        job.wasInvited ? "Invitation Acceptée" : "Candidature envoyée"
+                                        job.status === 'ACCEPTED' ? "Candidature Acceptée" :
+                                            job.status === 'REJECTED' ? "Candidature Rejetée" :
+                                                job.wasInvited ? "Invitation Reçue" : "Candidature envoyée"
                                     ) : job.isInvited ? (
                                         "Vous êtes invité"
                                     ) : isFull ? (
@@ -133,6 +139,7 @@ export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApp
                                     ) : (
                                         "Postuler maintenant (1 jeton)"
                                     )}
+
                                 </button>
                                 <button
                                     onClick={() => onSave(job.id)}
@@ -142,7 +149,7 @@ export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApp
                                         : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
                                         }`}
                                 >
-                                    {isSaving ? <Loader2 size={18} className="animate-spin" /> : job.isSaved ? "Sauvegardée" : "Sauvegarder"}
+                                    {isSaving ? <Loader2 size={18} className="animate-spin" /> : job.isSaved ? <><BookmarkCheck size={18} /> Sauvegardé</> : <><Bookmark size={18} /> Sauvegarder</>}
                                 </button>
                             </div>
                             {!hasTokens && !job.isApplied && !isFull && (

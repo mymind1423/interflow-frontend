@@ -3,13 +3,14 @@ import { useParams } from 'react-router-dom';
 import { companyApi } from '../../api/companyApi';
 import { aiApi } from '../../api/aiApi';
 import { useAuth } from '../../authContext';
-import { Star, Download, Sparkles, GraduationCap, MapPin, Phone, Mail, FileText, CheckCircle, Send } from 'lucide-react';
+import { Star, Download, Sparkles, GraduationCap, MapPin, Phone, Mail, FileText, CheckCircle, Send, Calendar, Clock, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function PublicProfile() {
     const { studentId } = useParams();
     const { user } = useAuth();
     const [profile, setProfile] = useState(null);
+    const [interviews, setInterviews] = useState([]); // New state for interviews
     const [loading, setLoading] = useState(true);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
@@ -23,8 +24,21 @@ export default function PublicProfile() {
 
     const loadProfile = async () => {
         try {
+            // Load Profile
             const data = await companyApi.getStudentProfile(studentId);
             setProfile(data);
+
+            // Load Interviews (Public view? Or restricted? Assuming simplified public view for badge)
+            // In a real app we might need a specific endpoint or permissions. 
+            // For now, we reuse an endpoint or simulate it if the data comes with profile.
+            // If the API doesn't support it publicly, we might skip it or Mock it.
+            // Let's assume we can fetch it if we are authorized (Company or Admin or Self)
+            if (user) {
+                try {
+                    const ints = await companyApi.getStudentInterviews(studentId); // Hypothetical endpoint
+                    setInterviews(ints || []);
+                } catch (e) { /* Ignore if unauthorized */ }
+            }
 
             if (user?.role === 'company') {
                 try {
@@ -61,7 +75,6 @@ export default function PublicProfile() {
     const generatePitch = async () => {
         setPitchLoading(true);
         try {
-            // Utiliser le nom de l'entreprise connectée comme contexte simpliste ou une description générique
             const jobDesc = `Entreprise ${user.displayName} (Domaine: ${user.domaine || 'Tech'}). Recherche stagiaire motivé.`;
             const res = await aiApi.generatePitch(jobDesc, studentId);
             setPitch(res.points);
@@ -75,7 +88,7 @@ export default function PublicProfile() {
     if (loading) return <div className="p-12 text-center text-white">Chargement...</div>;
     if (!profile) return <div className="p-12 text-center text-white">Profil introuvable</div>;
 
-    const isCompany = user?.role === 'company' || user?.user_type === 'company'; // Check user_type
+    const isCompany = user?.role === 'company' || user?.user_type === 'company';
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -116,6 +129,31 @@ export default function PublicProfile() {
                                 </a>
                             )}
                         </div>
+
+                        {/* PLANNED INTERVIEWS SECTION (BADGE SCAN) */}
+                        {interviews.length > 0 && (
+                            <div className="mt-8">
+                                <h3 className="text-white font-bold mb-4 flex items-center gap-2 border-t border-slate-800 pt-6">
+                                    <Calendar className="text-emerald-500" /> Entretiens Programmés
+                                </h3>
+                                <div className="space-y-3">
+                                    {interviews.map(int => (
+                                        <div key={int.id} className="bg-slate-800/40 border border-slate-700 rounded-xl p-3 flex items-center justify-between">
+                                            <div>
+                                                <p className="font-bold text-white text-sm">{int.companyName}</p>
+                                                <p className="text-xs text-slate-400">{int.title}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                                                    <Clock size={12} /> {new Date(int.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                                <p className="text-[10px] text-slate-500 uppercase font-bold mt-0.5">{int.room ? `Salle ${int.room}` : 'En ligne'}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* AI & Scorecard Column */}

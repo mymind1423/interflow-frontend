@@ -6,6 +6,8 @@ import { Building, Search, Calendar, Filter, Briefcase, CheckCircle, XCircle, Cl
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
+import Skeleton from "../../components/common/Skeleton";
+import EmptyState from "../../components/common/EmptyState";
 
 export default function Applications() {
     const { user } = useAuth();
@@ -15,6 +17,7 @@ export default function Applications() {
     const [applications, setApplications] = useState([]);
     const [appFilter, setAppFilter] = useState("ALL"); // ALL, PENDING, ACCEPTED, REJECTED
     const [appSearch, setAppSearch] = useState("");
+    const [appLoading, setAppLoading] = useState(true);
     const [appsLoaded, setAppsLoaded] = useState(false);
 
     // --- INVITATIONS STATE ---
@@ -36,6 +39,7 @@ export default function Applications() {
     }, [activeTab, appsLoaded, invsLoaded]);
 
     const fetchApplications = async () => {
+        setAppLoading(true);
         try {
             const data = await studentApi.getApplications();
             setApplications(data);
@@ -43,6 +47,8 @@ export default function Applications() {
         } catch (err) {
             console.error(err);
             toast.error("Erreur lors du chargement des candidatures");
+        } finally {
+            setAppLoading(false);
         }
     };
 
@@ -265,93 +271,106 @@ export default function Applications() {
 
                         {/* LIST */}
                         <div className="grid gap-4">
-                            <AnimatePresence mode="popLayout">
-                                {filteredApps.map((app, index) => (
-                                    <motion.div
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.98 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        transition={{ delay: index * 0.05 }}
-                                        key={app.id}
-                                        className="group relative bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-2xl p-0 overflow-hidden hover:border-white/20 transition-all hover:shadow-2xl hover:shadow-blue-900/5"
-                                    >
-                                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(app.status).split(' ')[0].replace('text-', 'bg-')}`} />
-
-                                        <div className="p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-5 sm:gap-6 pl-7 sm:pl-8">
-                                            {/* Logo */}
-                                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden shadow-lg shrink-0 group-hover:scale-105 transition-transform">
-                                                {app.companyLogo ? (
-                                                    <img src={app.companyLogo} alt={app.companyName} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <Building size={24} className="text-slate-500" />
-                                                )}
+                            {appLoading ? (
+                                Array(3).fill(0).map((_, i) => (
+                                    <div key={i} className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 flex items-center gap-6">
+                                        <Skeleton className="w-16 h-16 rounded-xl" />
+                                        <div className="flex-1 space-y-3">
+                                            <div className="flex justify-between">
+                                                <Skeleton className="w-1/3 h-6 rounded-lg" />
+                                                <Skeleton className="w-20 h-6 rounded-full" />
                                             </div>
+                                            <div className="flex gap-4">
+                                                <Skeleton className="w-1/4 h-4 rounded-lg" />
+                                                <Skeleton className="w-1/4 h-4 rounded-lg" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <AnimatePresence mode="popLayout">
+                                    {filteredApps.map((app, index) => (
+                                        <motion.div
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.98 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ delay: index * 0.05 }}
+                                            key={app.id}
+                                            className="group relative bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-2xl p-0 overflow-hidden hover:border-white/20 transition-all hover:shadow-2xl hover:shadow-blue-900/5"
+                                        >
+                                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(app.status).split(' ')[0].replace('text-', 'bg-')}`} />
 
-                                            {/* Info */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors truncate pr-4">{app.jobTitle}</h3>
-                                                    <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm ${getStatusColor(app.status)}`}>
-                                                        {getStatusIcon(app.status)}
-                                                        {app.status === 'PENDING' ? 'Postulé' : getStatusLabel(app.status)}
+                                            <div className="p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-5 sm:gap-6 pl-7 sm:pl-8">
+                                                {/* Logo */}
+                                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden shadow-lg shrink-0 group-hover:scale-105 transition-transform">
+                                                    {app.companyLogo ? (
+                                                        <img src={app.companyLogo} alt={app.companyName} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Building size={24} className="text-slate-500" />
+                                                    )}
+                                                </div>
+
+                                                {/* Info */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors truncate pr-4">{app.jobTitle}</h3>
+                                                        <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm ${getStatusColor(app.status)}`}>
+                                                            {getStatusIcon(app.status)}
+                                                            {app.status === 'PENDING' ? 'Postulé' : getStatusLabel(app.status)}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
+                                                        <span className="flex items-center gap-2 font-medium text-slate-300">
+                                                            <Briefcase size={16} className="text-blue-500" />
+                                                            {app.companyName}
+                                                        </span>
+                                                        <span className="flex items-center gap-2 font-medium">
+                                                            <Calendar size={16} className="text-slate-500" />
+                                                            {new Date(app.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                        {app.status === 'INVITED' ? (
+                                                            <span className="text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/10 whitespace-nowrap">
+                                                                ✨ 0 Jeton (Invitation)
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-xs text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/10 whitespace-nowrap">
+                                                                🪙 1 Jeton consommé
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
 
-                                                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-400">
-                                                    <span className="flex items-center gap-2 font-medium text-slate-300">
-                                                        <Briefcase size={16} className="text-blue-500" />
-                                                        {app.companyName}
-                                                    </span>
-                                                    <span className="flex items-center gap-2 font-medium">
-                                                        <Calendar size={16} className="text-slate-500" />
-                                                        {new Date(app.createdAt).toLocaleDateString()}
-                                                    </span>
-                                                    {app.status === 'INVITED' ? (
-                                                        <span className="text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/10 whitespace-nowrap">
-                                                            ✨ 0 Jeton (Invitation)
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-xs text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/10 whitespace-nowrap">
-                                                            🪙 1 Jeton consommé
-                                                        </span>
+                                                {/* Actions */}
+                                                <div className="flex items-center gap-3 pt-4 md:pt-0 md:pl-6 md:border-l border-white/5">
+                                                    {app.status === 'PENDING' && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                confirmDeleteApp(app);
+                                                            }}
+                                                            disabled={deletingId === app.id}
+                                                            className="p-3 bg-slate-800/50 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded-xl transition-colors tooltip border border-transparent hover:border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            title="Retirer ma candidature"
+                                                        >
+                                                            {deletingId === app.id ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
+                                                        </button>
                                                     )}
                                                 </div>
                                             </div>
+                                        </motion.div>
+                                    ))}
 
-                                            {/* Actions */}
-                                            <div className="flex items-center gap-3 pt-4 md:pt-0 md:pl-6 md:border-l border-white/5">
-                                                {app.status === 'PENDING' && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            confirmDeleteApp(app);
-                                                        }}
-                                                        disabled={deletingId === app.id}
-                                                        className="p-3 bg-slate-800/50 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded-xl transition-colors tooltip border border-transparent hover:border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        title="Retirer ma candidature"
-                                                    >
-                                                        {deletingId === app.id ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
+                                </AnimatePresence>
+                            )}
 
-                            {filteredApps.length === 0 && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className="text-center py-24 border border-dashed border-slate-800 rounded-3xl bg-slate-900/20 backdrop-blur-sm"
-                                >
-                                    <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-500 ring-4 ring-slate-800/20">
-                                        <Filter size={32} />
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-white mb-2">Aucune candidature trouvée</h3>
-                                    <p className="text-slate-400">Modifiez vos filtres ou explorez les offres.</p>
-                                </motion.div>
+                            {!appLoading && filteredApps.length === 0 && (
+                                <EmptyState
+                                    icon={Filter}
+                                    title="Aucune candidature trouvée"
+                                    description="Modifiez vos filtres ou explorez les offres pour postuler."
+                                />
                             )}
                         </div>
                     </motion.div>
@@ -365,9 +384,10 @@ export default function Applications() {
                         className="space-y-10"
                     >
                         {invLoading && invitations.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                <Loader2 size={48} className="text-blue-500 animate-spin" />
-                                <p className="text-slate-500 font-bold animate-pulse">Chargement des invitations...</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {Array(4).fill(0).map((_, i) => (
+                                    <Skeleton key={i} className="w-full h-[280px] rounded-[2rem]" />
+                                ))}
                             </div>
                         ) : (
                             <>
@@ -379,12 +399,12 @@ export default function Applications() {
                                     </div>
 
                                     {invitations.length === 0 ? (
-                                        <div className="text-center py-12 bg-slate-900/50 rounded-2xl border border-dashed border-slate-800">
-                                            <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-500">
-                                                <Video size={24} />
-                                            </div>
-                                            <p className="text-slate-400 font-medium">Aucune invitation reçue.</p>
-                                            <p className="text-slate-600 text-sm mt-1">Vos futures invitations apparaîtront ici.</p>
+                                        <div className="col-span-full">
+                                            <EmptyState
+                                                icon={Video}
+                                                title="Aucune invitation reçue"
+                                                description="Vos futures invitations apparaîtront ici. Complétez votre profil pour être visible !"
+                                            />
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
