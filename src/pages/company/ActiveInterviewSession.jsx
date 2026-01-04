@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { companyApi } from "../../api/companyApi";
-import { FileText, CheckCircle, Clock, User, ChevronLeft, Send, AlertTriangle, MonitorPlay, Star, Mic, Video, VideoOff, MicOff, BellRing } from "lucide-react";
+import { Loader2, FileText, CheckCircle, Clock, User, ChevronLeft, Send, AlertTriangle, MonitorPlay, Star, Mic, Video, VideoOff, MicOff, BellRing } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
@@ -324,26 +324,25 @@ export default function ActiveInterviewSession() {
                             {interview.status === 'CHECKED_IN' ? "Live Connect Actif" : "Hors ligne"}
                         </span>
                     </div>
+                    <button
+                        onClick={requestFinish}
+                        disabled={!!processingAction}
+                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-auto"
+                    >
+                        {processingAction === 'FINISH' ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} /> Terminer Entretien</>}
+                    </button>
                 </div>
-
-                <button
-                    onClick={requestFinish}
-                    disabled={!!processingAction}
-                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                >
-                    {processingAction === 'FINISH' ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} /> Terminer Entretien</>}
-                </button>
+                <ConfirmationModal
+                    isOpen={confirmModal.isOpen}
+                    onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                    title={confirmModal.title}
+                    message={confirmModal.message}
+                    confirmText={confirmModal.confirmText}
+                    isDangerous={confirmModal.isDangerous}
+                    onConfirm={confirmModal.onConfirm}
+                    isLoading={processingAction === 'FINISH'}
+                />
             </div>
-            <ConfirmationModal
-                isOpen={confirmModal.isOpen}
-                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-                title={confirmModal.title}
-                message={confirmModal.message}
-                confirmText={confirmModal.confirmText}
-                isDangerous={confirmModal.isDangerous}
-                onConfirm={confirmModal.onConfirm}
-                isLoading={processingAction === 'FINISH'}
-            />
         </div>
     );
 }
