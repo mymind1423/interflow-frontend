@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MapPin, BookmarkCheck, Bookmark, Briefcase, Clock, DollarSign, Building, Loader2, Send, CheckCircle, Share2, Upload } from "lucide-react";
 import Button from "../common/Button";
-import ApplyModal from "./ApplyModal";
 
 export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApply, onSave, isApplying, isSaving, isLocked, saturatedLimit = 50 }) {
     const isSaturated = job && (job.applicationCount || 0) >= saturatedLimit;
@@ -17,22 +16,13 @@ export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApp
     // const hasTokens = tokensRemaining !== undefined ? tokensRemaining > 0 : true; // Deprecated in favor of isLocked (5 apps limit)
 
     const canApply = !job?.isApplied && !job?.isInvited && !isFull && !isClosed && !isLocked;
-    const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
-    const handleConfirmApply = (cvId) => {
-        onApply(job.id);
-        setTimeout(() => setIsApplyModalOpen(false), 500);
-    };
 
     const handleMainAction = () => {
         if (canApply) {
-            setIsApplyModalOpen(true);
+            onApply(job.id);
         } else if (isLocked && !job?.isApplied) {
-            // Trigger parent to show Quota Modal (onApply with no ID or special handling?)
-            // The parent handler 'onApply' (handleApplyClick) handles checking isLocked usually.
-            // But here we are calling local modal.
-            // Let's call onApply wrapper from parent which checks lock.
-            onApply(job.id); // This will trigger the check in parent if implemented correctly
+            onApply(job.id);
         }
     };
 
@@ -170,13 +160,7 @@ export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApp
                     </motion.div>
                 </div>
             )}
-            <ApplyModal
-                isOpen={isApplyModalOpen}
-                onClose={() => setIsApplyModalOpen(false)}
-                onConfirm={handleConfirmApply}
-                jobTitle={job?.title}
-                isApplying={isApplying}
-            />
+
         </AnimatePresence>
     );
 }

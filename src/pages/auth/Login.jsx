@@ -187,22 +187,22 @@ function Login() {
                 <form onSubmit={handleLogin} className="space-y-6" noValidate>
                   <div className="space-y-4">
                     <div className="relative group">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={20} />
                       <input
                         type="email"
                         required
-                        className="w-full bg-white/5 border border-slate-200 dark:border-slate-800 rounded-xl px-12 py-3 sm:py-3.5 text-theme-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium backdrop-blur-sm"
+                        className="w-full bg-white border border-gray-200 rounded-xl px-12 py-3 sm:py-3.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
                         placeholder="votre.email@ecole.com"
                         onChange={(e) => setEmail(e.target.value)}
                         value={email}
                       />
                     </div>
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={20} />
                       <input
                         type={showPassword ? "text" : "password"}
                         required
-                        className="w-full bg-white/5 border border-slate-200 dark:border-slate-800 rounded-xl px-12 py-3 sm:py-3.5 text-theme-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium pr-12 backdrop-blur-sm"
+                        className="w-full bg-white border border-gray-200 rounded-xl px-12 py-3 sm:py-3.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium pr-12"
                         placeholder="••••••••"
                         onChange={(e) => setPassword(e.target.value)}
                         value={password}
@@ -210,7 +210,7 @@ function Login() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-theme-primary transition-colors focus:outline-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-none"
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -219,7 +219,11 @@ function Login() {
 
                   <Recaptcha onChange={setRecaptchaToken} />
 
-                  <div className="flex justify-end">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer" />
+                      <span className="text-sm text-gray-500 group-hover:text-blue-600 transition-colors font-medium">Se souvenir de moi</span>
+                    </label>
                     <button
                       type="button"
                       onClick={() => setIsResetMode(true)}

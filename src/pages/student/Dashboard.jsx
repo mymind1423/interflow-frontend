@@ -21,10 +21,9 @@ import {
 import toast from "react-hot-toast";
 
 import SkeletonCard from "../../components/common/SkeletonCard";
-import ProfileCompletion from "../../components/common/ProfileCompletion";
+
 import ApplicationQuota from "../../components/common/ApplicationQuota";
 import { useApplicationQuota } from "../../hooks/useApplicationQuota";
-import { fixEncoding } from "../../utils/stringUtils";
 import JobCard from "../../components/common/JobCard";
 import { openStudentGuide } from "../../components/common/StudentGuide";
 import { formatDistanceToNow } from "date-fns";
@@ -100,8 +99,10 @@ export default function Dashboard() {
       // Update local state
       setRecentJobs(prev => prev.map(j => j.id === jobId ? { ...j, isApplied: true } : j));
       if (selectedJob?.id === jobId) setSelectedJob(prev => ({ ...prev, isApplied: true }));
+      toast.success("Candidature envoyée avec succès ! 🚀");
     } catch (error) {
       console.error(error);
+      toast.error("Erreur lors de l'envoi de la candidature.");
     } finally {
       setApplyingId(null);
     }
@@ -270,6 +271,7 @@ export default function Dashboard() {
                     onApply={() => handleApply(job.id)}
                     onClick={() => isLocked ? setShowQuotaModal(true) : setSelectedJob(job)}
                     isLocked={isLocked}
+                    isApplying={applyingId === job.id}
                   />
                 ))
               ) : (
@@ -288,28 +290,16 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Tip or Promo */}
-          <div className="glass-panel border-indigo-100 dark:border-indigo-500/20 rounded-3xl p-6 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/10 dark:to-blue-900/10 flex items-center justify-between relative overflow-hidden">
-            <div className="relative z-10 max-w-[65%]">
-              <h3 className="text-indigo-900 dark:text-indigo-300 font-bold mb-2">Besoin d'un coup de pouce ?</h3>
-              <p className="text-indigo-700 dark:text-indigo-400 text-sm mb-4 leading-relaxed">
-                Retrouvez tous nos conseils pour réussir vos entretiens dans le guide.
-              </p>
-              <button onClick={openStudentGuide} className="text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:text-indigo-500 dark:hover:text-indigo-300 flex items-center gap-1 transition-colors">
-                Ouvrir le guide <ArrowRight size={14} />
-              </button>
-            </div>
-            {/* Placeholder for 3D Illustration */}
-            <div className="w-24 h-24 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-center justify-center shrink-0">
-              <span className="text-xs text-indigo-400 font-medium">Illustration</span>
-            </div>
-          </div>
+
 
         </div>
 
         {/* RIGHT COLUMN: Next Interview & Helper (1/3 width) */}
         <div className="space-y-6">
 
-          <ProfileCompletion profile={profile} />
+
+
+          {/* Quick Tip or Promo */}
 
           <h2 className="text-xl font-bold text-theme-primary flex items-center gap-2">
             <Video className="text-emerald-500" size={24} />
@@ -386,6 +376,23 @@ export default function Dashboard() {
               <Link to="/jobs" className="text-blue-600 font-bold text-sm mt-2 hover:underline">Postuler maintenant</Link>
             </div>
           )}
+
+          {/* Quick Tip or Promo */}
+          <div className="glass-panel border-indigo-100 dark:border-indigo-500/20 rounded-3xl p-6 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/10 dark:to-blue-900/10 flex items-center justify-between relative overflow-hidden">
+            <div className="relative z-10 max-w-[65%]">
+              <h3 className="text-indigo-900 dark:text-indigo-300 font-bold mb-2">Besoin d'un coup de pouce ?</h3>
+              <p className="text-indigo-700 dark:text-indigo-400 text-sm mb-4 leading-relaxed">
+                Retrouvez tous nos conseils pour réussir vos entretiens dans le guide.
+              </p>
+              <button onClick={openStudentGuide} className="text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:text-indigo-500 dark:hover:text-indigo-300 flex items-center gap-1 transition-colors">
+                Ouvrir le guide <ArrowRight size={14} />
+              </button>
+            </div>
+            {/* Placeholder for 3D Illustration */}
+            <div className="w-24 h-24 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-center justify-center shrink-0">
+              <span className="text-xs text-indigo-400 font-medium">Illustration</span>
+            </div>
+          </div>
 
           {/* Quick Tip or Promo */}
 

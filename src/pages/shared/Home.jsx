@@ -67,36 +67,7 @@ export default function Home() {
         </section>
 
         {/* Features Grid */}
-        <section className="py-20 px-4 md:px-8 max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={Briefcase}
-              title="Offres ciblées"
-              desc="Accédez à des milliers d'offres d'emploi et d'alternance sélectionnées pour vous."
-            />
 
-            <FeatureCard
-              icon={FileText}
-              title="Candidature simplifiée"
-              desc="Postulez en un clic avec votre profil complet. Plus besoin de remplir 50 formulaires."
-            />
-            <FeatureCard
-              icon={Users}
-              title="Connexion directe"
-              desc="Échangez directement avec les recruteurs et suivez l'état de vos demandes."
-            />
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-20 border-y border-white/5 glass-panel">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 grid md:grid-cols-4 gap-8 text-center">
-            <StatItem value="10k+" label="Étudiants" />
-            <StatItem value="500+" label="Entreprises" />
-            <StatItem value="2k+" label="Offres actives" />
-            <StatItem value="95%" label="Satisfaction" />
-          </div>
-        </section>
 
       </div>
     </div>

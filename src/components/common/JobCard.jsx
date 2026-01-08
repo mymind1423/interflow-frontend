@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { fixEncoding } from "../../utils/stringUtils"; // Assuming this exists based on Dashboard usage
 
-export default function JobCard({ job, viewMode = "card", isSaved, isSaving, onToggleSave, onApply, onClick, isLocked, saturatedLimit = 50 }) {
+export default function JobCard({ job, viewMode = "card", isSaved, isSaving, onToggleSave, onApply, onClick, isLocked, saturatedLimit = 50, isApplying }) {
     const isList = viewMode === 'list';
 
     // Saturation Logic
@@ -109,7 +109,7 @@ export default function JobCard({ job, viewMode = "card", isSaved, isSaving, onT
                                         : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
                                 }`}
                         >
-                            {job.isApplied ? (
+                            {isApplying ? <Loader2 size={16} className="animate-spin" /> : job.isApplied ? (
                                 job.status === 'ACCEPTED' ? "Accepté" :
                                     job.status === 'REJECTED' ? "Rejeté" :
                                         job.wasInvited ? "Invité" : "Candidaté"
@@ -200,12 +200,12 @@ export default function JobCard({ job, viewMode = "card", isSaved, isSaving, onT
                                 : "bg-slate-100 dark:bg-white/5 text-theme-secondary hover:bg-slate-200 dark:hover:bg-white/10 dark:shadow-none"
                         }`}
                 >
-                    {job.isApplied ? (
+                    {isApplying ? <Loader2 size={16} className="animate-spin" /> : job.isApplied ? (
                         job.status === 'ACCEPTED' ? "Candidature Acceptée" :
                             job.status === 'REJECTED' ? "Candidature Rejetée" :
                                 job.wasInvited ? "Invitation Reçue" : <><Check size={16} /> Candidature envoyée</>
                     ) : isClosed ? "Clôturée" : isLocked ? "Quota Atteint" : job.isInvited ? "Vous êtes invité" : "Voir l'offre"}
-                    {!job.isApplied && !isClosed && !isLocked && <ArrowRight size={16} className="text-current group-hover/btn:translate-x-1 transition-transform" />}
+                    {!job.isApplied && !isClosed && !isLocked && !isApplying && <ArrowRight size={16} className="text-current group-hover/btn:translate-x-1 transition-transform" />}
                 </button>
             </div>
 
