@@ -2,17 +2,30 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import legacy from '@vitejs/plugin-legacy'
 
 export default defineConfig({
   server: {
-    host: true,
+    host: true, // or '0.0.0.0'
+    allowedHosts: true, // Allow all hosts (tunneling/local network)
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
     },
   },
+  build: {
+    target: 'es2015', // Keep default modern target
+    cssTarget: 'chrome61',
+    outDir: 'dist',
+  },
   plugins: [
     react(),
     tailwindcss(),
+    legacy({
+      targets: ['chrome >= 64', 'edge >= 79', 'safari >= 11.1', 'firefox >= 67'],
+      additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
+      renderLegacyChunks: true,
+      modernPolyfills: true
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
