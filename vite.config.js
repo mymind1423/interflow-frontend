@@ -29,6 +29,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // Increase limit to 5MB for legacy chunks
+      },
       manifest: {
         name: 'InternFlow - Plateforme de Stages',
         short_name: 'InternFlow',
