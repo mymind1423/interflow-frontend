@@ -57,11 +57,11 @@ export default function Footer() {
                         <ul className="space-y-4 text-sm text-theme-secondary">
                             <li className="flex items-start gap-3">
                                 <Mail size={16} className="mt-1 text-blue-500 shrink-0" />
-                                <span>contact@internflow.com</span>
+                                <span>mouadleroy10@icloud.com</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <Phone size={16} className="mt-1 text-blue-500 shrink-0" />
-                                <span>+253 77 00 00 00</span>
+                                <span>+253 77 78 03 17</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <MapPin size={16} className="mt-1 text-blue-500 shrink-0" />
