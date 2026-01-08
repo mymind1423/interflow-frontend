@@ -4,18 +4,15 @@ import { ArrowRight, CheckCircle, Briefcase, Users, FileText, Star } from "lucid
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white selection:bg-blue-500/30">
+    <div className="min-h-screen">
 
-      {/* Background Elements */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] -right-[10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[100px]" />
-      </div>
+      {/* Background Elements - Using CSS Mesh Gradient now, removing hardcoded blobs or keeping them as subtle overlay if needed.
+          For "Aurora" we want the CSS mesh to do the heavy lifting. Disabling these for now to let CSS shine. */}
 
       <div className="relative z-10">
 
         {/* Hero Section */}
-        <section className="pt-32 pb-20 px-4 md:px-8 max-w-7xl mx-auto text-center">
+        <section className="pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -31,13 +28,13 @@ export default function Home() {
 
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8">
               Trouvez l'emploi <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-600">
+              <span className="text-gradient font-extrabold">
                 qui lance votre avenir
               </span>
             </h1>
 
 
-            <p className="max-w-2xl mx-auto text-lg text-slate-400 mb-10 leading-relaxed">
+            <p className="max-w-2xl mx-auto text-lg text-theme-secondary mb-10 leading-relaxed">
               Connectez-vous aux meilleures entreprises, gérez vos candidatures et boostez votre profil.
               Simplement. Efficacement.
             </p>
@@ -51,7 +48,7 @@ export default function Home() {
               </Link>
               <Link
                 to="/login"
-                className="px-8 py-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-700 hover:border-slate-500 text-white rounded-full font-bold text-lg transition-all backdrop-blur-sm"
+                className="px-8 py-4 glass-panel hover:bg-white/20 text-theme-primary rounded-full font-bold text-lg transition-all backdrop-blur-sm"
               >
                 Se connecter
               </Link>
@@ -92,7 +89,7 @@ export default function Home() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-20 border-y border-slate-800 bg-slate-950/50 backdrop-blur-sm">
+        <section className="py-20 border-y border-white/5 glass-panel">
           <div className="max-w-7xl mx-auto px-4 md:px-8 grid md:grid-cols-4 gap-8 text-center">
             <StatItem value="10k+" label="Étudiants" />
             <StatItem value="500+" label="Entreprises" />
@@ -108,12 +105,12 @@ export default function Home() {
 
 function FeatureCard({ icon: Icon, title, desc }) {
   return (
-    <div className="p-8 rounded-3xl bg-slate-900/40 border border-slate-800 hover:border-blue-500/30 transition-colors group">
-      <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 mb-6 group-hover:bg-blue-500 group-hover:text-white transition-all">
+    <div className="p-8 rounded-3xl glass-panel hover:scale-[1.02] transition-all duration-300 group">
+      <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all">
         <Icon size={28} />
       </div>
-      <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
-      <p className="text-slate-400 leading-relaxed">{desc}</p>
+      <h3 className="text-xl font-bold text-theme-primary mb-3">{title}</h3>
+      <p className="text-theme-secondary leading-relaxed">{desc}</p>
     </div>
   )
 }
@@ -121,8 +118,8 @@ function FeatureCard({ icon: Icon, title, desc }) {
 function StatItem({ value, label }) {
   return (
     <div>
-      <div className="text-4xl font-bold text-white mb-2">{value}</div>
-      <div className="text-blue-400 font-medium uppercase tracking-wider text-sm">{label}</div>
+      <div className="text-4xl font-bold text-theme-primary mb-2">{value}</div>
+      <div className="text-blue-500 font-medium uppercase tracking-wider text-sm">{label}</div>
     </div>
   )
 }

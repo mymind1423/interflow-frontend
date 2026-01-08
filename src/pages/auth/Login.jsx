@@ -143,25 +143,25 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-slate-950">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-body transition-colors duration-300">
 
       {/* Left: Branding & Message */}
-      <div className="hidden lg:flex flex-col justify-center p-12 relative overflow-hidden bg-slate-900">
+      <div className="hidden lg:flex flex-col justify-center p-12 relative overflow-hidden glass-panel border-r border-white/10">
         <div className="absolute top-0 left-0 w-full h-full bg-blue-600/10 blur-[100px]" />
 
         <div className="relative z-10 max-w-lg mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-6">Bon retour parmi nous ! 👋</h1>
-          <p className="text-lg text-slate-400 mb-8 leading-relaxed">
+          <h1 className="text-4xl font-bold text-theme-primary mb-6">Bon retour parmi nous ! 👋</h1>
+          <p className="text-lg text-theme-secondary mb-8 leading-relaxed">
             Reprenez vos recherches là où vous les aviez laissées. De nouvelles offres vous attendent chaque jour.
           </p>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-2xl bg-slate-950/50 border border-slate-800">
-              <div className="text-2xl font-bold text-blue-400 mb-1">200+</div>
-              <div className="text-sm text-slate-500">Nouvelles offres</div>
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+              <div className="text-2xl font-bold text-blue-500 mb-1">200+</div>
+              <div className="text-sm text-theme-secondary">Nouvelles offres</div>
             </div>
-            <div className="p-4 rounded-2xl bg-slate-950/50 border border-slate-800">
-              <div className="text-2xl font-bold text-indigo-400 mb-1">95%</div>
-              <div className="text-sm text-slate-500">Taux de réponse</div>
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+              <div className="text-2xl font-bold text-indigo-500 mb-1">95%</div>
+              <div className="text-sm text-theme-secondary">Taux de réponse</div>
             </div>
           </div>
         </div>
@@ -180,29 +180,29 @@ function Login() {
                 className="space-y-8"
               >
                 <div className="text-center lg:text-left">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white">Connexion</h2>
-                  <p className="mt-2 text-slate-400">Entrez vos identifiants pour accéder à votre compte.</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-theme-primary">Connexion</h2>
+                  <p className="mt-2 text-theme-secondary">Entrez vos identifiants pour accéder à votre compte.</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6" noValidate>
                   <div className="space-y-4">
                     <div className="relative group">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
                       <input
                         type="email"
                         required
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-12 py-3 sm:py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium"
+                        className="w-full bg-white/5 border border-slate-200 dark:border-slate-800 rounded-xl px-12 py-3 sm:py-3.5 text-theme-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium backdrop-blur-sm"
                         placeholder="votre.email@ecole.com"
                         onChange={(e) => setEmail(e.target.value)}
                         value={email}
                       />
                     </div>
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
                       <input
                         type={showPassword ? "text" : "password"}
                         required
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-12 py-3 sm:py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium pr-12"
+                        className="w-full bg-white/5 border border-slate-200 dark:border-slate-800 rounded-xl px-12 py-3 sm:py-3.5 text-theme-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium pr-12 backdrop-blur-sm"
                         placeholder="••••••••"
                         onChange={(e) => setPassword(e.target.value)}
                         value={password}
@@ -210,7 +210,7 @@ function Login() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors focus:outline-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-theme-primary transition-colors focus:outline-none"
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -223,7 +223,7 @@ function Login() {
                     <button
                       type="button"
                       onClick={() => setIsResetMode(true)}
-                      className="text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                      className="text-sm font-semibold text-blue-500 hover:text-blue-400 transition-colors"
                     >
                       Mot de passe oublié ?
                     </button>
@@ -233,7 +233,7 @@ function Login() {
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium"
+                      className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium"
                     >
                       {error}
                     </motion.div>
@@ -254,17 +254,17 @@ function Login() {
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-800" />
+                    <div className="w-full border-t border-slate-200 dark:border-slate-800" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="bg-slate-950 px-2 text-slate-500">Ou continuer avec</span>
+                    <span className="bg-transparent px-2 text-theme-secondary backdrop-blur-sm">Ou continuer avec</span>
                   </div>
                 </div>
 
                 <button
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 hover:border-slate-700 transition-all text-white font-medium"
+                  className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/5 hover:bg-white/10 transition-all text-theme-primary font-medium"
                 >
                   <img
                     src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -274,9 +274,9 @@ function Login() {
                   Google
                 </button>
 
-                <p className="text-center text-slate-400">
+                <p className="text-center text-theme-secondary">
                   Pas encore de compte ?{" "}
-                  <Link to="/signup" className="text-blue-400 hover:text-blue-300 font-semibold hover:underline">
+                  <Link to="/signup" className="text-blue-500 hover:text-blue-400 font-semibold hover:underline">
                     Créer un compte
                   </Link>
                 </p>
@@ -292,24 +292,24 @@ function Login() {
                 <div className="text-center lg:text-left">
                   <button
                     onClick={() => setIsResetMode(false)}
-                    className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-4 transition-colors"
+                    className="inline-flex items-center gap-2 text-theme-secondary hover:text-theme-primary mb-4 transition-colors"
                   >
                     <ArrowLeft size={16} /> Retour
                   </button>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-theme-primary flex items-center gap-3">
                     <KeyRound className="text-blue-500" />
                     Réinitialisation
                   </h2>
-                  <p className="mt-2 text-slate-400">Entrez votre email pour recevoir un lien de réinitialisation.</p>
+                  <p className="mt-2 text-theme-secondary">Entrez votre email pour recevoir un lien de réinitialisation.</p>
                 </div>
 
                 <form onSubmit={handleResetPassword} className="space-y-6">
                   <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
                     <input
                       type="email"
                       required
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-12 py-3 sm:py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium"
+                      className="w-full bg-white/5 border border-slate-200 dark:border-slate-800 rounded-xl px-12 py-3 sm:py-3.5 text-theme-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium backdrop-blur-sm"
                       placeholder="votre.email@ecole.com"
                       onChange={(e) => setResetEmail(e.target.value)}
                       value={resetEmail}

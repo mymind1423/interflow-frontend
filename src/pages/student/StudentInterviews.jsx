@@ -3,6 +3,8 @@ import { studentApi } from "../../api/studentApi";
 import { Calendar, MapPin, MessageSquare, Loader2, CheckCircle, Video, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import EmptyState from "../../components/common/EmptyState";
+import Button from "../../components/common/Button";
 
 export default function StudentInterviews() {
     const [interviews, setInterviews] = useState([]);
@@ -64,26 +66,26 @@ export default function StudentInterviews() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="min-w-[300px] bg-slate-900 border border-slate-700 p-4 rounded-xl shadow-2xl relative"
+                        className="min-w-[300px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-2xl relative"
                     >
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
+                            <div className="p-2 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg">
                                 <MessageSquare size={18} />
                             </div>
-                            <h4 className="font-bold text-white">Feedback Entretien</h4>
+                            <h4 className="font-bold text-slate-900 dark:text-white">Feedback Entretien</h4>
                         </div>
                         <div className="space-y-3">
-                            <div className="flex justify-between items-center bg-slate-950 p-3 rounded-lg">
+                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-950 p-3 rounded-lg">
                                 <span className="text-xs font-bold text-slate-500 uppercase">Note</span>
-                                <span className="text-lg font-black text-white">{feedback.rating || feedback.score || "?"}/10</span>
+                                <span className="text-lg font-black text-slate-900 dark:text-white">{feedback.rating || feedback.score || "?"}/10</span>
                             </div>
-                            <p className="text-sm text-slate-300 italic">
+                            <p className="text-sm text-slate-600 dark:text-slate-300 italic">
                                 "{feedback.remarks || feedback.comments || "Aucun commentaire."}"
                             </p>
                         </div>
                         <button
                             onClick={() => toast.dismiss(t.id)}
-                            className="w-full mt-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold uppercase rounded-lg transition-colors"
+                            className="w-full mt-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold uppercase rounded-lg transition-colors"
                         >
                             Fermer
                         </button>
@@ -118,23 +120,23 @@ export default function StudentInterviews() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 relative pb-24">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 flex items-center gap-3">
-                <Calendar className="text-blue-500" /> Mes Entretiens
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-theme-primary mb-2 flex items-center gap-3">
+                <Calendar className="text-blue-600 dark:text-blue-400" /> Mes Entretiens
             </h1>
-            <p className="text-slate-400 mb-6 sm:mb-8 text-sm sm:text-base">Consultez vos entretiens et confirmez votre présence.</p>
+            <p className="text-theme-secondary mb-6 sm:mb-8 text-sm sm:text-base">Consultez vos entretiens et confirmez votre présence.</p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8 glass-panel p-2 rounded-2xl shadow-md border border-white/60">
                 <input
                     type="text"
                     placeholder="Rechercher un entretien..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-theme-primary placeholder-theme-secondary focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                    className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
                 >
                     <option value="ALL">Tous les statuts</option>
                     <option value="SCHEDULED">Programmés</option>
@@ -143,13 +145,12 @@ export default function StudentInterviews() {
             </div>
 
             {filteredInterviews.length === 0 ? (
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
-                    <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Calendar size={32} className="text-slate-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Aucun entretien trouvé</h3>
-                    <p className="text-slate-400">Essayez de modifier vos filtres de recherche.</p>
-                </div>
+                <EmptyState
+                    icon={Calendar}
+                    title="Aucun entretien trouvé"
+                    description="Essayez de modifier vos filtres de recherche ou attendez de nouvelles invitations."
+                    color="purple"
+                />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredInterviews.map(int => {
@@ -158,56 +159,56 @@ export default function StudentInterviews() {
                         const isToday = new Date().toDateString() === dateObj.toDateString();
 
                         return (
-                            <div key={int.id} className="relative overflow-hidden bg-gradient-to-br from-emerald-900/40 to-slate-900/40 backdrop-blur-sm border border-emerald-500/20 rounded-3xl p-5 sm:p-6 group hover:border-emerald-500/40 transition-all hover:shadow-2xl hover:shadow-emerald-900/20 hover:-translate-y-1">
+                            <div key={int.id} className="relative overflow-hidden glass-panel border border-white/60 shadow-sm hover:shadow-md hover:-translate-y-1 rounded-3xl p-5 sm:p-6 group transition-all">
 
                                 <div className="relative z-10 flex flex-col h-full">
                                     {/* Header */}
                                     <div className="flex justify-between items-start mb-6">
                                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${status === 'SCHEDULED'
-                                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/20"
+                                            ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20 shadow-sm"
                                             : status === 'COMPLETED'
-                                                ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                                                : "bg-slate-700/50 text-slate-400 border-slate-600/50"
+                                                ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-500/20"
+                                                : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/10"
                                             }`}>
                                             <span className={`w-1.5 h-1.5 rounded-full ${status === 'SCHEDULED' ? "bg-emerald-500 animate-pulse" : status === 'COMPLETED' ? "bg-blue-500" : "bg-slate-400"}`} />
                                             {status === 'SCHEDULED' ? (isToday ? "Aujourd'hui" : "Programmé") : status === 'COMPLETED' ? 'Terminé' : status}
                                         </span>
                                         <div className="text-right">
-                                            <p className="text-white font-bold font-mono text-base sm:text-lg leading-none">{formatTime(int.date)}</p>
-                                            <p className="text-emerald-500/80 text-xs font-bold uppercase tracking-wide mt-1">{formatDate(int.date)}</p>
+                                            <p className="text-gray-500 font-bold font-mono text-base sm:text-lg leading-none">{formatTime(int.date)}</p>
+                                            <p className="text-gray-700 text-xs font-bold uppercase tracking-wide mt-1">{formatDate(int.date)}</p>
                                         </div>
                                     </div>
 
                                     {/* Company Info */}
                                     <div className="flex items-start gap-3 sm:gap-4 mb-6">
-                                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white flex items-center justify-center border border-white/10 overflow-hidden shrink-0 shadow-lg p-1">
+                                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-white/10 overflow-hidden shrink-0 shadow-sm p-1">
                                             {int.companyLogo ? (
                                                 <img src={int.companyLogo} alt={int.companyName} className="w-full h-full object-contain" />
                                             ) : (
-                                                <span className="text-slate-900 font-bold text-lg">{int.companyName ? int.companyName.substring(0, 2).toUpperCase() : "??"}</span>
+                                                <span className="text-slate-900 dark:text-white font-bold text-lg">{int.companyName ? int.companyName.substring(0, 2).toUpperCase() : "??"}</span>
                                             )}
                                         </div>
                                         <div className="min-w-0 pt-0.5">
-                                            <h3 className="text-base sm:text-lg font-bold text-white leading-tight mb-1 truncate pr-2">
+                                            <h3 className="text-base sm:text-lg font-bold text-theme-primary leading-tight mb-1 truncate pr-2">
                                                 {int.title}
                                             </h3>
-                                            <p className="text-slate-400 text-sm font-medium truncate flex items-center gap-1">
-                                                Chez <span className="text-emerald-400 font-bold">{int.companyName}</span>
+                                            <p className="text-theme-secondary text-sm font-medium truncate flex items-center gap-1">
+                                                Chez <span className="text-blue-900 font-bold">{int.companyName}</span>
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Location / Room */}
-                                    <div className="bg-slate-950/30 rounded-2xl p-4 border border-white/5 mb-6 mt-auto">
+                                    <div className="bg-slate-50 dark:bg-white/5 rounded-2xl p-4 border border-slate-200 dark:border-white/10 mb-6 mt-auto">
                                         <div className="flex items-start gap-3">
-                                            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 mt-0.5 shrink-0">
+                                            <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0">
                                                 <MapPin size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-slate-200 text-sm font-bold leading-tight mb-1">
+                                                <p className="text-theme-primary text-sm font-bold leading-tight mb-1">
                                                     {int.room ? `Salle ${int.room}` : "Lieu à confirmer"}
                                                 </p>
-                                                <p className="text-slate-500 text-xs font-medium leading-relaxed">
+                                                <p className="text-theme-secondary text-xs font-medium leading-relaxed">
                                                     Université de Djibouti, Campus de Balbala
                                                 </p>
                                             </div>
@@ -217,51 +218,48 @@ export default function StudentInterviews() {
                                     {/* Actions */}
                                     <div className="flex flex-col gap-3">
                                         {status === 'COMPLETED' ? (
-                                            <button
+                                            <Button
                                                 onClick={() => handleViewFeedback(int.id)}
-                                                disabled={feedbackLoading === int.id}
-                                                className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm border border-blue-500/20 transition-all flex items-center justify-center gap-2 group/btn shadow-lg disabled:opacity-50"
+                                                isLoading={feedbackLoading === int.id}
+                                                className="w-full"
+                                                variant="primary"
+                                                icon={MessageSquare}
                                             >
-                                                {feedbackLoading === int.id ? (
-                                                    <Loader2 size={16} className="animate-spin" />
-                                                ) : (
-                                                    <>
-                                                        <MessageSquare size={16} className="group-hover/btn:scale-110 transition-transform" />
-                                                        Voir Feedback
-                                                    </>
-                                                )}
-                                            </button>
+                                                Voir Feedback
+                                            </Button>
                                         ) : (
                                             <>
                                                 {/* CHECK-IN BUTTON */}
                                                 {!int.checkedIn ? (
-                                                    <button
+                                                    <Button
                                                         onClick={() => handleCheckIn(int.id)}
-                                                        disabled={checkInLoading === int.id || status !== 'SCHEDULED'} // Allow check-in only if scheduled (logic can be refined)
-                                                        className="w-full py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-green-600/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        isLoading={checkInLoading === int.id}
+                                                        disabled={status !== 'SCHEDULED'}
+                                                        className="w-full bg-emerald-500 hover:bg-emerald-400 border-none shadow-lg shadow-emerald-500/20"
+                                                        variant="primary" // Custom override via className
+                                                        icon={CheckCircle}
                                                     >
-                                                        {checkInLoading === int.id ? (
-                                                            <Loader2 size={16} className="animate-spin" />
-                                                        ) : (
-                                                            <><CheckCircle size={16} /> Je suis là (Check-in)</>
-                                                        )}
-                                                    </button>
+                                                        Je suis là (Check-in)
+                                                    </Button>
                                                 ) : (
-                                                    <div className="w-full py-3 bg-green-500/10 border border-green-500/20 text-green-500 rounded-xl font-bold text-xs text-center uppercase tracking-widest flex items-center justify-center gap-2">
+                                                    <div className="w-full py-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl font-bold text-xs text-center uppercase tracking-widest flex items-center justify-center gap-2">
                                                         <CheckCircle size={16} /> Présence Validée
                                                     </div>
                                                 )}
 
+                                                {/* Meet Link */}
                                                 {int.meetLink && (
-                                                    <a
+                                                    <Button
                                                         href={int.meetLink}
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         onClick={() => toast.success("Ouverture de la salle virtuelle...")}
-                                                        className={`w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-2 ${!int.checkedIn ? 'opacity-50 pointer-events-none' : ''}`}
+                                                        className={`w-full ${!int.checkedIn ? 'opacity-50 pointer-events-none' : ''}`}
+                                                        variant="primary"
+                                                        icon={Video}
                                                     >
-                                                        <Video size={16} /> Rejoindre Visio
-                                                    </a>
+                                                        Rejoindre Visio
+                                                    </Button>
                                                 )}
                                             </>
                                         )}

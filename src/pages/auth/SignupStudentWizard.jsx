@@ -322,22 +322,22 @@ function SignupStudentWizard() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-slate-950">
+    <main className="min-h-screen flex items-center justify-center p-4 bg-body transition-colors duration-300">
       <div className="w-full max-w-2xl">
 
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Inscription Étudiant</h1>
-          <p className="text-slate-400">Complétez votre profil en 3 étapes simples.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary mb-2">Inscription Étudiant</h1>
+          <p className="text-theme-secondary">Complétez votre profil en 3 étapes simples.</p>
         </div>
 
         {/* Custom Stepper */}
         <div className="flex items-center justify-between mb-12 relative max-w-xs mx-auto">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-800 -z-10 -translate-y-1/2 rounded-full" />
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 dark:bg-slate-700 -z-10 -translate-y-1/2 rounded-full" />
           <div className={`absolute top-1/2 left-0 h-1 bg-blue-500 -z-10 -translate-y-1/2 rounded-full transition-all duration-500 ease-out`} style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }} />
 
           {[1, 2, 3].map((s) => (
-            <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${step >= s ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-110" : "bg-slate-800 text-slate-500"}`}>
+            <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${step >= s ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-110" : "bg-white/10 text-theme-secondary border border-white/10"}`}>
               {step > s ? <Check size={18} /> : s}
             </div>
           ))}
@@ -346,13 +346,13 @@ function SignupStudentWizard() {
         {/* Card */}
         <motion.div
           layout
-          className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-10 shadow-xl"
+          className="glass-panel border border-white/10 rounded-2xl p-5 sm:p-10 shadow-xl"
         >
           <StepTransition key={step}>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-medium flex items-center gap-2">
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-sm font-medium flex items-center gap-2">
                 ⚠️ {error}
               </div>
             )}
@@ -360,24 +360,24 @@ function SignupStudentWizard() {
             {/* STEP 1: Account */}
             {step === 1 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-theme-primary flex items-center gap-2">
                   <User className="text-blue-500" /> Identité
                 </h2>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-400">Nom complet</label>
+                    <label className="text-sm font-medium text-theme-secondary">Nom complet</label>
                     <input
                       name="fullname"
                       type="text"
                       placeholder="Jean Dupont"
                       value={form.fullname}
                       onChange={handleChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 sm:py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-400">Email</label>
+                    <label className="text-sm font-medium text-theme-secondary">Email</label>
                     <input
                       name="email"
                       type="email"
@@ -385,7 +385,7 @@ function SignupStudentWizard() {
                       placeholder="jean@etudiant.com"
                       value={form.email}
                       onChange={handleChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all disabled:opacity-50"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all disabled:opacity-50 placeholder:text-slate-400"
                     />
                   </div>
                 </div>
@@ -393,33 +393,33 @@ function SignupStudentWizard() {
                 {signupMethod !== 'google' && (
                   <>
                     <div className="space-y-1 relative">
-                      <label className="text-sm font-medium text-slate-400">Mot de passe</label>
+                      <label className="text-sm font-medium text-theme-secondary">Mot de passe</label>
                       <div className="relative">
                         <input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all pr-12"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all pr-12 placeholder:text-slate-400"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors focus:outline-none"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-theme-secondary hover:text-theme-primary transition-colors focus:outline-none"
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
                     </div>
                     <div className="space-y-1 relative">
-                      <label className="text-sm font-medium text-slate-400">Confirmer mot de passe</label>
+                      <label className="text-sm font-medium text-theme-secondary">Confirmer mot de passe</label>
                       <div className="relative">
                         <input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
-                          className={`w-full bg-slate-950 border rounded-xl px-4 py-3 text-white focus:ring-2 outline-none transition-all pr-12 ${password !== confirmPassword && confirmPassword ? "border-red-500 focus:ring-red-500/50" : "border-slate-800 focus:ring-blue-500/50"}`}
+                          className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-theme-primary focus:ring-2 outline-none transition-all pr-12 placeholder:text-slate-400 ${password !== confirmPassword && confirmPassword ? "border-red-500 focus:ring-red-500/50" : "border-white/10 focus:ring-blue-500/50"}`}
                         />
                       </div>
                     </div>
@@ -438,12 +438,12 @@ function SignupStudentWizard() {
                 {signupMethod !== 'google' && (
                   <>
                     <div className="relative py-2">
-                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
-                      <div className="relative flex justify-center text-sm"><span className="bg-slate-900 px-2 text-slate-500">Ou</span></div>
+                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
+                      <div className="relative flex justify-center text-sm"><span className="bg-transparent px-2 text-theme-secondary backdrop-blur-sm">Ou</span></div>
                     </div>
                     <button
                       onClick={handleGoogleSignup}
-                      className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-xl py-3.5 font-medium transition-colors flex items-center justify-center gap-3"
+                      className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-theme-primary rounded-xl py-3.5 font-medium transition-colors flex items-center justify-center gap-3"
                     >
                       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" />
                       S'inscrire avec Google
@@ -457,86 +457,86 @@ function SignupStudentWizard() {
             {/* STEP 2: Personal Info */}
             {step === 2 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-theme-primary flex items-center gap-2">
                   <MapPin className="text-blue-500" /> Parcours & Contact
                 </h2>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-400">Date de naissance</label>
+                  <label className="text-sm font-medium text-theme-secondary">Date de naissance</label>
                   <input
                     name="dateOfBirth"
                     type="date"
                     value={form.dateOfBirth}
                     onChange={handleChange}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all [color-scheme:dark]"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all [color-scheme:light] dark:[color-scheme:dark]"
                   />
                 </div>
 
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-400">Téléphone</label>
+                    <label className="text-sm font-medium text-theme-secondary">Téléphone</label>
                     <input
                       name="phone"
                       type="tel"
                       placeholder="06 12 34 56 78"
                       value={form.phone}
                       onChange={handleChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-400">Ville / Adresse</label>
+                    <label className="text-sm font-medium text-theme-secondary">Ville / Adresse</label>
                     <input
                       name="address"
                       type="text"
                       placeholder="Casablanca, Maroc"
                       value={form.address}
                       onChange={handleChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-400"
                     />
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-400">Faculté / Institut</label>
+                    <label className="text-sm font-medium text-theme-secondary">Faculté / Institut</label>
                     <select
                       name="faculty"
                       value={form.faculty}
                       onChange={(e) => {
                         setForm({ ...form, faculty: e.target.value, domaine: "" });
                       }}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all appearance-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all appearance-none"
                     >
-                      <option value="">Sélectionner...</option>
-                      {Object.keys(facultiesData).map(f => <option key={f} value={f}>{f}</option>)}
+                      <option value="" className="bg-slate-900">Sélectionner...</option>
+                      {Object.keys(facultiesData).map(f => <option key={f} value={f} className="bg-idk text-black dark:text-white dark:bg-slate-900">{f}</option>)}
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-400">Domaine d'études</label>
+                    <label className="text-sm font-medium text-theme-secondary">Domaine d'études</label>
                     <select
                       name="domaine"
                       value={form.domaine}
                       onChange={handleChange}
                       disabled={!form.faculty}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all appearance-none disabled:opacity-50"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all appearance-none disabled:opacity-50"
                     >
-                      <option value="">Sélectionner...</option>
-                      {form.faculty && facultiesData[form.faculty].map(d => <option key={d} value={d}>{d}</option>)}
+                      <option value="" className="bg-slate-900">Sélectionner...</option>
+                      {form.faculty && facultiesData[form.faculty].map(d => <option key={d} value={d} className="bg-idk text-black dark:text-white dark:bg-slate-900">{d}</option>)}
                     </select>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-400">Niveau d'études</label>
+                    <label className="text-sm font-medium text-theme-secondary">Niveau d'études</label>
                     <select
                       name="grade"
                       value={form.grade}
                       onChange={handleChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all appearance-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:ring-2 focus:ring-blue-500/50 outline-none transition-all appearance-none"
                     >
-                      <option value="">Sélectionner...</option>
-                      {grades.map(g => <option key={g} value={g}>{g}</option>)}
+                      <option value="" className="bg-slate-900">Sélectionner...</option>
+                      {grades.map(g => <option key={g} value={g} className="bg-idk text-black dark:text-white dark:bg-slate-900">{g}</option>)}
                     </select>
                   </div>
                 </div>
@@ -544,7 +544,7 @@ function SignupStudentWizard() {
                 <div className="flex gap-4 pt-4">
                   <button
                     onClick={() => setStep(1)}
-                    className="px-6 py-3.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium flex items-center gap-2"
+                    className="px-6 py-3.5 rounded-xl border border-white/10 text-theme-secondary hover:text-theme-primary hover:bg-white/5 transition-colors font-medium flex items-center gap-2"
                   >
                     <ArrowLeft size={18} /> Retour
                   </button>
@@ -562,19 +562,19 @@ function SignupStudentWizard() {
             {/* STEP 3: Documents */}
             {step === 3 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-theme-primary flex items-center gap-2">
                   <Briefcase className="text-blue-500" /> Documents
                 </h2>
 
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-theme-secondary">
                   Fichiers acceptés: PDF, Word, JPG, PNG (Max 5Mo).
                 </p>
 
                 <div className="space-y-4">
                   {/* CV Upload */}
                   <div className="relative group">
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Votre CV</label>
-                    <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${cvFile ? "border-emerald-500/50 bg-emerald-500/5" : "border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/50"}`}>
+                    <label className="block text-sm font-medium text-theme-secondary mb-2">Votre CV</label>
+                    <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${cvFile ? "border-emerald-500/50 bg-emerald-500/5" : "border-white/10 hover:border-blue-500/50 hover:bg-white/5"}`}>
                       <input
                         type="file"
                         accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
@@ -584,12 +584,12 @@ function SignupStudentWizard() {
                       {cvFile ? (
                         <>
                           <Check size={32} className="text-emerald-500 mb-2" />
-                          <span className="text-emerald-400 font-medium truncate max-w-[200px]">{cvFile.name}</span>
+                          <span className="text-emerald-500 font-medium truncate max-w-[200px]">{cvFile.name}</span>
                         </>
                       ) : (
                         <>
-                          <Upload size={24} className="text-slate-500 mb-2 group-hover:text-blue-400" />
-                          <span className="text-slate-400 group-hover:text-slate-200">Cliquez pour ajouter votre CV</span>
+                          <Upload size={24} className="text-theme-secondary mb-2 group-hover:text-blue-500" />
+                          <span className="text-theme-secondary group-hover:text-theme-primary">Cliquez pour ajouter votre CV</span>
                         </>
                       )}
                     </div>
@@ -597,8 +597,8 @@ function SignupStudentWizard() {
 
                   {/* Diploma Upload */}
                   <div className="relative group">
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Dernier Diplôme (ou certificat)</label>
-                    <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${diplomaFile ? "border-emerald-500/50 bg-emerald-500/5" : "border-slate-700 hover:border-blue-500/50 hover:bg-slate-800/50"}`}>
+                    <label className="block text-sm font-medium text-theme-secondary mb-2">Dernier Diplôme (ou certificat)</label>
+                    <div className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${diplomaFile ? "border-emerald-500/50 bg-emerald-500/5" : "border-white/10 hover:border-blue-500/50 hover:bg-white/5"}`}>
                       <input
                         type="file"
                         accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
@@ -608,12 +608,12 @@ function SignupStudentWizard() {
                       {diplomaFile ? (
                         <>
                           <Check size={32} className="text-emerald-500 mb-2" />
-                          <span className="text-emerald-400 font-medium truncate max-w-[200px]">{diplomaFile.name}</span>
+                          <span className="text-emerald-500 font-medium truncate max-w-[200px]">{diplomaFile.name}</span>
                         </>
                       ) : (
                         <>
-                          <Upload size={24} className="text-slate-500 mb-2 group-hover:text-blue-400" />
-                          <span className="text-slate-400 group-hover:text-slate-200">Cliquez pour ajouter un justificatif</span>
+                          <Upload size={24} className="text-theme-secondary mb-2 group-hover:text-blue-500" />
+                          <span className="text-theme-secondary group-hover:text-theme-primary">Cliquez pour ajouter un justificatif</span>
                         </>
                       )}
                     </div>
@@ -625,7 +625,7 @@ function SignupStudentWizard() {
                 <div className="flex gap-4 pt-6">
                   <button
                     onClick={() => setStep(2)}
-                    className="px-6 py-3.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium flex items-center gap-2"
+                    className="px-6 py-3.5 rounded-xl border border-white/10 text-theme-secondary hover:text-theme-primary hover:bg-white/5 transition-colors font-medium flex items-center gap-2"
                   >
                     <ArrowLeft size={18} /> Retour
                   </button>

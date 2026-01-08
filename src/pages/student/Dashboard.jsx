@@ -20,13 +20,20 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import Skeleton from "../../components/common/Skeleton";
+import SkeletonCard from "../../components/common/SkeletonCard";
+import ProfileCompletion from "../../components/common/ProfileCompletion";
+import ApplicationQuota from "../../components/common/ApplicationQuota";
+import { useApplicationQuota } from "../../hooks/useApplicationQuota";
 import { fixEncoding } from "../../utils/stringUtils";
+import JobCard from "../../components/common/JobCard";
 import { openStudentGuide } from "../../components/common/StudentGuide";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
-import JobDrawer from "../../components/modals/JobDrawer"; // Add this import
+import JobDrawer from "../../components/modals/JobDrawer";
+import Button from "../../components/common/Button";
+import Skeleton from "../../components/common/Skeleton";
+import QuotaLimitModal from "../../components/modals/QuotaLimitModal";
 
 
 export default function Dashboard() {
@@ -37,11 +44,15 @@ export default function Dashboard() {
   const [recentJobs, setRecentJobs] = useState([]);
   const [profile, setProfile] = useState(null);
 
+  // Quota System
+  const { used, limit, isLocked, loading: quotaLoading } = useApplicationQuota();
   // Drawer State
   const [selectedJob, setSelectedJob] = useState(null);
   const [applyingId, setApplyingId] = useState(null);
   const [savingId, setSavingId] = useState(null);
 
+  // Quota System
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
 
 
   useEffect(() => {
@@ -121,6 +132,16 @@ export default function Dashboard() {
     }
   };
 
+  // Assuming these are defined elsewhere or need to be added
+  const filteredJobs = recentJobs; // Placeholder, replace with actual filtering logic
+  const savedJobs = recentJobs.filter(j => j.isSaved).map(j => j.id); // Placeholder
+  const toggleSave = async (jobId) => {
+    const job = recentJobs.find(j => j.id === jobId);
+    if (!job) return;
+    await handleSave({ stopPropagation: () => { } }, jobId);
+  };
+  const viewMode = 'list'; // Placeholder
+
 
   if (!user) return null;
 
@@ -129,26 +150,50 @@ export default function Dashboard() {
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
 
       {/* 1. Header & Welcome */}
-      <div className="flex flex-col md:flex-row justify-between items-end gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2">
-            Bonjour, <span className="text-blue-400">{profile?.fullname || user.displayName || "Étudiant"}</span> 👋
-          </h1>
-          <p className="text-slate-400 text-lg">Voici ce qu'il se passe pour vous aujourd'hui.</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={openStudentGuide}
-            className="px-5 py-2.5 bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl font-bold transition-colors border border-white/5"
-          >
-            Guide
-          </button>
-          <Link
-            to="/jobs"
-            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-blue-500/25"
-          >
-            Explorer les offres <ArrowRight size={18} />
-          </Link>
+      <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-gradient-to-r from-blue-600 to-violet-500 p-6 sm:p-8 md:p-12 shadow-2xl shadow-indigo-500/20">
+        {/* Animated Background Shapes */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none mix-blend-overlay animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-sky-400/30 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-6">
+          <div className="space-y-4 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/20 backdrop-blur-md text-white/90 text-xs sm:text-sm font-medium shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+              </span>
+              Prêt pour votre prochaine opportunité ?
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+              {new Date().getHours() < 18 ? "Bonjour" : "Bonsoir"}, <br className="md:hidden" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-100 to-white">
+                {profile?.fullname || user.displayName || "Étudiant"}
+              </span> 👋
+            </h1>
+
+            <p className="text-lg text-indigo-100/90 font-medium max-w-lg leading-relaxed">
+              Vous avez <span className="text-white font-bold">{stats.applications} candidatures</span> en cours et <span className="text-white font-bold">{stats.interviews} entretiens</span> prévus. Continuez sur cette lancée !
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <Button
+              onClick={openStudentGuide}
+              variant="secondary"
+              className="bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/40 backdrop-blur-md shadow-sm"
+              icon={Bookmark}
+            >
+              Guide
+            </Button>
+            <Link
+              to="/jobs"
+              className="px-8 py-3.5 bg-white text-indigo-600 hover:bg-indigo-50 rounded-xl font-bold transition-all shadow-xl shadow-indigo-900/10 hover:scale-105 flex items-center justify-center gap-2 group border border-white/50"
+            >
+              Explorer les offres
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -158,40 +203,40 @@ export default function Dashboard() {
           label="Candidatures"
           value={stats.applications}
           icon={Briefcase}
-          color="text-blue-400"
-          bg="bg-blue-400/10"
+          color="text-blue-500"
+          bg="bg-blue-500/10"
           loading={loading}
         />
         <KpiCard
           label="Entretiens"
           value={stats.interviews}
           icon={Calendar}
-          color="text-emerald-400"
-          bg="bg-emerald-400/10"
+          color="text-emerald-500"
+          bg="bg-emerald-500/10"
           loading={loading}
         />
         <KpiCard
           label="Invitations"
           value={stats.invitations}
           icon={CheckCircle2}
-          color="text-purple-400"
-          bg="bg-purple-400/10"
+          color="text-purple-500"
+          bg="bg-purple-500/10"
           loading={loading}
         />
         <KpiCard
           label="Vues Profil"
           value={stats.processedApplications || stats.views || 0}
           icon={Eye}
-          color="text-amber-400"
-          bg="bg-amber-400/10"
+          color="text-amber-500"
+          bg="bg-amber-500/10"
           loading={loading}
         />
         <KpiCard
           label="Favoris"
           value={stats.savedJobs || stats.saved}
           icon={TrendingUp}
-          color="text-pink-400"
-          bg="bg-pink-400/10"
+          color="text-pink-500"
+          bg="bg-pink-500/10"
           loading={loading}
         />
       </div>
@@ -202,101 +247,61 @@ export default function Dashboard() {
         {/* LEFT COLUMN: Active Companies / Jobs (2/3 width) */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Building className="text-blue-400" size={24} />
+            <h2 className="text-xl font-bold text-theme-primary flex items-center gap-2">
+              <Building className="text-blue-600 dark:text-blue-400" size={24} />
               Offres Récentes
             </h2>
-            <Link to="/jobs" className="text-sm text-slate-400 hover:text-white transition-colors">
+            <Link to="/jobs" className="text-sm text-theme-secondary hover:text-theme-primary transition-colors">
               Voir tout
             </Link>
           </div>
 
           <div className="space-y-3">
-            {loading ? Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />) : (
-              recentJobs.length > 0 ? recentJobs.map(job => (
-
-                <div key={job.id} className="group bg-slate-900/40 backdrop-blur-sm border border-white/5 p-4 rounded-2xl hover:border-blue-500/30 hover:bg-slate-800/60 transition-all flex items-center gap-4 cursor-pointer" onClick={() => setSelectedJob(job)}>
-
-                  <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-1 shadow-sm shrink-0">
-                    {job.companyLogo ? (
-                      <img src={job.companyLogo} alt={job.companyName} className="w-full h-full object-contain" />
-                    ) : (
-                      <Building size={24} className="text-slate-600" />
-                    )}
+            {loading ? Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />) : (
+              recentJobs.length > 0 ? (
+                filteredJobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    viewMode={viewMode}
+                    isSaved={savedJobs.includes(job.id)}
+                    isSaving={savingId === job.id}
+                    onToggleSave={() => toggleSave(job.id)}
+                    onApply={() => handleApply(job.id)}
+                    onClick={() => isLocked ? setShowQuotaModal(true) : setSelectedJob(job)}
+                    isLocked={isLocked}
+                  />
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 px-4 bg-white border border-dashed border-gray-200 rounded-2xl text-center">
+                  <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                    <Briefcase size={20} className="text-gray-400" />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-white font-bold truncate group-hover:text-blue-400 transition-colors text-lg">{fixEncoding(job.title)}</h4>
-                    <div className="flex items-center gap-2 text-slate-400 text-sm mt-0.5 mb-2">
-                      <span className="truncate font-medium">{fixEncoding(job.companyName)}</span>
-                      <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
-                      <span className="truncate">{fixEncoding(job.location)}</span>
-                      <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
-                      <span className="text-xs">
-                        {job.createdAt ? formatDistanceToNow(new Date(job.createdAt), { addSuffix: true, locale: fr }) : "Récemment"}
-                      </span>
-                    </div>
-
-                    {(job.interviewQuota && job.applicationCount !== undefined) && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl font-black text-amber-500 leading-none">
-                          {Math.max(0, job.interviewQuota - job.applicationCount)}
-                        </span>
-                        <span className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest mt-1">
-                          Places Restantes
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="hidden sm:flex flex-col items-end gap-3">
-                    {job.isApplied ? (
-                      <span className={`px-3 py-1 text-xs font-bold rounded-lg uppercase border ${job.status === 'ACCEPTED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                        job.status === 'REJECTED' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                          job.wasInvited ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                            'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                        }`}>
-                        {job.status === 'ACCEPTED' ? "Accepté" :
-                          job.status === 'REJECTED' ? "Rejeté" :
-                            job.wasInvited ? "Invité" : "Candidaté"}
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 bg-slate-800 text-slate-400 text-xs font-bold rounded-lg uppercase border border-white/5 group-hover:bg-blue-500/10 group-hover:text-blue-400 group-hover:border-blue-500/20 transition-all">
-                        {fixEncoding(job.type)}
-                      </span>
-                    )}
-
-                    <button
-                      onClick={(e) => handleSave(e, job.id)}
-                      disabled={savingId === job.id}
-                      className={`p-2 rounded-xl transition-all ${job.isSaved
-                        ? "bg-pink-500/10 text-pink-500 border border-pink-500/20"
-                        : "bg-slate-800 text-slate-500 hover:text-white hover:bg-slate-700 border border-transparent hover:border-slate-600"
-                        }`}
-                    >
-                      {savingId === job.id ? <Loader2 size={18} className="animate-spin" /> : job.isSaved ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
-                    </button>
-                  </div>
-
-                  <ArrowRight className="text-slate-600 group-hover:text-blue-400 -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all ml-2" />
+                  <h3 className="text-gray-900 font-bold text-sm mb-1">Aucune offre récente</h3>
+                  <Link to="/jobs" className="text-blue-600 font-bold text-xs hover:underline">
+                    Explorer les offres
+                  </Link>
                 </div>
-              )) : (
-                <div className="text-slate-500 text-center py-12 bg-slate-900/20 rounded-2xl border border-dashed border-slate-800">
-                  Aucune offre disponible pour le moment.
-                </div>
-              )
-            )}
+              ))}
 
 
           </div>
 
           {/* Quick Tip or Promo */}
-          <div className="bg-gradient-to-br from-indigo-900/20 to-blue-900/10 border border-indigo-500/20 rounded-3xl p-6">
-            <h3 className="text-white font-bold mb-2">Besoin d'un coup de pouce ?</h3>
-            <p className="text-slate-400 text-sm mb-4 leading-relaxed">
-              Retrouvez tous nos conseils pour réussir vos entretiens dans le guide.
-            </p>
-            <button onClick={openStudentGuide} className="text-indigo-400 font-bold text-sm hover:text-indigo-300 flex items-center gap-1 transition-colors">
-              Ouvrir le guide <ArrowRight size={14} />
-            </button>
+          <div className="glass-panel border-indigo-100 dark:border-indigo-500/20 rounded-3xl p-6 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/10 dark:to-blue-900/10 flex items-center justify-between relative overflow-hidden">
+            <div className="relative z-10 max-w-[65%]">
+              <h3 className="text-indigo-900 dark:text-indigo-300 font-bold mb-2">Besoin d'un coup de pouce ?</h3>
+              <p className="text-indigo-700 dark:text-indigo-400 text-sm mb-4 leading-relaxed">
+                Retrouvez tous nos conseils pour réussir vos entretiens dans le guide.
+              </p>
+              <button onClick={openStudentGuide} className="text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:text-indigo-500 dark:hover:text-indigo-300 flex items-center gap-1 transition-colors">
+                Ouvrir le guide <ArrowRight size={14} />
+              </button>
+            </div>
+            {/* Placeholder for 3D Illustration */}
+            <div className="w-24 h-24 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-center justify-center shrink-0">
+              <span className="text-xs text-indigo-400 font-medium">Illustration</span>
+            </div>
           </div>
 
         </div>
@@ -304,59 +309,81 @@ export default function Dashboard() {
         {/* RIGHT COLUMN: Next Interview & Helper (1/3 width) */}
         <div className="space-y-6">
 
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Video className="text-emerald-400" size={24} />
+          <ProfileCompletion profile={profile} />
+
+          <h2 className="text-xl font-bold text-theme-primary flex items-center gap-2">
+            <Video className="text-emerald-500" size={24} />
             Prochain Rendez-vous
           </h2>
 
           {loading ? (
             <Skeleton className="w-full h-64 rounded-3xl" />
           ) : nextInterview ? (
-            <div className="bg-gradient-to-br from-emerald-900/20 to-slate-900 border border-emerald-500/30 rounded-3xl p-6 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
-              <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-                <Calendar size={100} />
-              </div>
+            <div className="glass-panel rounded-[2rem] p-6 relative overflow-hidden group hover:border-blue-300 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
 
               <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-emerald-500/20 text-emerald-400 p-2 rounded-xl">
-                    <Calendar size={20} />
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-600 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    Prochain Live
                   </div>
-                  <span className="text-emerald-400 font-bold text-sm uppercase tracking-wider">Bientôt</span>
+                  <div className="text-gray-500 text-xs font-mono font-bold">
+                    {formatDistanceToNow(new Date(nextInterview.dateObj), { addSuffix: true, locale: fr })}
+                  </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-1 leading-snug">
-                  {nextInterview.jobTitle || nextInterview.title || "Entretien"}
-                </h3>
-                <p className="text-slate-400 font-medium mb-6">
-                  {nextInterview.companyName || nextInterview.company}
-                </p>
+                <div className="mb-6">
+                  <h3 className="text-2xl font-black text-theme-primary mb-2 leading-tight">
+                    {nextInterview.jobTitle || nextInterview.title || "Entretien"}
+                  </h3>
+                  <p className="text-theme-secondary font-medium flex items-center gap-2">
+                    <Building size={14} />
+                    {nextInterview.companyName || nextInterview.company}
+                  </p>
+                </div>
 
-                <div className="space-y-3 mb-6 bg-slate-950/30 p-4 rounded-xl border border-black/20">
-                  <div className="flex items-center gap-3 text-slate-300 font-medium">
-                    <Clock size={16} className="text-emerald-500" />
-                    {new Date(nextInterview.dateObj).toLocaleDateString()} à {new Date(nextInterview.dateObj).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                  {nextInterview.room && (
-                    <div className="flex items-center gap-3 text-slate-300 font-medium">
-                      <MapPin size={16} className="text-emerald-500" />
-                      Salle {nextInterview.room}
+                <div className="space-y-3 mb-8 bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                  <div className="flex items-center gap-3 text-theme-primary font-medium">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-blue-600">
+                      <Calendar size={16} />
                     </div>
-                  )}
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase font-bold">Date</p>
+                      <p className="font-bold">{new Date(nextInterview.dateObj).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-theme-primary font-medium">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-blue-600">
+                      <Clock size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase font-bold">Heure</p>
+                      <p className="font-bold">{new Date(nextInterview.dateObj).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  </div>
                 </div>
 
-                <Link to="/interviews" className="block w-full text-center py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20">
-                  Voir les détails
-                </Link>
+                <Button
+                  to="/interviews"
+                  className="w-full shadow-lg shadow-blue-600/20"
+                  variant="primary"
+                  icon={Video}
+                >
+                  Rejoindre la salle d'attente
+                </Button>
               </div>
             </div>
           ) : (
-            <div className="bg-slate-900/40 border border-dashed border-slate-700 rounded-3xl p-8 text-center flex flex-col items-center justify-center h-64">
-              <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center mb-4 text-slate-500">
+            <div className="glass-panel border border-dashed border-gray-200 dark:border-white/10 rounded-2xl p-8 text-center flex flex-col items-center justify-center h-64">
+              <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3 text-gray-400">
                 <Calendar size={24} />
               </div>
-              <p className="text-slate-400 font-medium text-sm">Aucun entretien programmé.</p>
-              <Link to="/jobs" className="text-blue-400 font-bold text-sm mt-2 hover:underline">Postuler maintenant</Link>
+              <p className="text-gray-500 font-medium text-sm">Aucun entretien programmé.</p>
+              <Link to="/jobs" className="text-blue-600 font-bold text-sm mt-2 hover:underline">Postuler maintenant</Link>
             </div>
           )}
 
@@ -365,7 +392,7 @@ export default function Dashboard() {
 
         </div>
 
-      </div>
+      </div >
       <JobDrawer
         job={selectedJob}
         isOpen={!!selectedJob}
@@ -373,28 +400,32 @@ export default function Dashboard() {
         onApply={handleApply}
         onSave={handleSave}
         isApplying={applyingId === selectedJob?.id}
-        tokensRemaining={profile?.tokensRemaining}
+        tokensRemaining={limit - used} // Dynamic calculation
       />
-    </div>
+
+      <QuotaLimitModal isOpen={showQuotaModal} onClose={() => setShowQuotaModal(false)} />
+    </div >
 
   );
 }
 
 // Minimal Component Sub-components for Cleanliness
 function KpiCard({ label, value, icon: Icon, color, bg, loading }) {
-  if (loading) return <Skeleton className="h-28 rounded-2xl" />;
+  if (loading) return <Skeleton className="h-32 rounded-3xl" />;
 
   return (
-    <div className="bg-slate-900/50 backdrop-blur-sm border border-white/5 p-4 rounded-2xl flex flex-col justify-between hover:border-white/10 transition-colors group h-28">
-      <div className="flex justify-between items-start">
-        <div className={`p-2 rounded-lg ${bg} ${color}`}>
-          <Icon size={20} />
+    <div className="glass-panel hover:-translate-y-1 p-5 rounded-2xl flex flex-col justify-between transition-all group h-32 relative overflow-hidden">
+      {/* Glow effect on hover */}
+      <div className={`absolute top-0 right-0 p-8 rounded-full blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none translate-x-1/3 -translate-y-1/3 ${bg.replace('/10', '/30')}`} />
+
+      <div className="flex justify-between items-start z-10">
+        <div className={`p-2.5 rounded-xl ${bg} ${color} ring-1 ring-inset ring-black/5 dark:ring-white/10`}>
+          <Icon size={22} />
         </div>
-        {/* <span className="text-xs text-slate-500 font-mono">+2 this week</span> */}
       </div>
-      <div>
-        <p className="text-3xl font-extrabold text-white group-hover:scale-105 transition-transform origin-left">{value}</p>
-        <p className="text-slate-400 font-medium text-xs uppercase tracking-wide mt-1">{label}</p>
+      <div className="z-10">
+        <p className="text-3xl font-black text-theme-primary tracking-tight group-hover:scale-105 transition-transform origin-left">{value}</p>
+        <p className="text-theme-secondary font-bold text-xs uppercase tracking-wide mt-1">{label}</p>
       </div>
     </div>
   );

@@ -56,3 +56,33 @@ export async function apiUpload(path, formData) {
 
   return body;
 }
+
+import axios from "axios";
+
+export async function apiUploadWithProgress(path, formData, onProgress) {
+  const token = await auth.currentUser?.getIdToken?.();
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    // axios sets Content-Type to multipart/form-data automatically with correct boundary
+  };
+
+  try {
+    const response = await axios.post(`${API_BASE}${path}`, formData, {
+      headers,
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentCompleted);
+        }
+      },
+    });
+    return response.data;
+  } catch (error) {
+    const message = error.response?.data?.error || "Upload failed";
+    const err = new Error(message);
+    err.status = error.response?.status;
+    throw err;
+  }
+}

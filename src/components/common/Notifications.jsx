@@ -58,11 +58,11 @@ export default function Notifications() {
         <div className="relative" ref={wrapperRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 text-slate-400 hover:text-white transition-colors rounded-full hover:bg-slate-800"
+                className="relative p-2 text-theme-secondary hover:text-theme-primary transition-colors rounded-full hover:bg-white/10"
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-950 animate-pulse" />
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white/10 animate-pulse" />
                 )}
             </button>
 
@@ -73,14 +73,14 @@ export default function Notifications() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full mt-2 w-80 md:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-xl overflow-hidden z-50 origin-top-right ring-1 ring-black/5"
+                        className="absolute right-0 top-full mt-2 w-80 md:w-96 glass-panel rounded-2xl overflow-hidden z-50 origin-top-right ring-1 ring-black/5"
                     >
-                        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50 backdrop-blur">
-                            <h3 className="font-semibold text-white">Notifications</h3>
+                        <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5 backdrop-blur">
+                            <h3 className="font-semibold text-theme-primary">Notifications</h3>
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
-                                    className="text-xs text-blue-400 hover:text-blue-300 font-medium"
+                                    className="text-xs text-blue-500 hover:text-blue-400 font-medium"
                                 >
                                     Tout marquer comme lu
                                 </button>
@@ -89,33 +89,33 @@ export default function Notifications() {
 
                         <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                             {notifications.length === 0 ? (
-                                <div className="p-8 text-center text-slate-500">
+                                <div className="p-8 text-center text-theme-secondary">
                                     <Bell size={32} className="mx-auto mb-3 opacity-20" />
                                     <p>Aucune notification pour le moment.</p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-slate-800">
+                                <div className="divide-y divide-white/5">
                                     {notifications.map((notif) => (
                                         <div
                                             key={notif.id}
                                             onClick={() => handleNotificationClick(notif)}
-                                            className={`p-4 hover:bg-slate-800/50 transition-colors relative group cursor-pointer ${!notif.isRead ? "bg-blue-500/5" : ""}`}
+                                            className={`p-4 hover:bg-white/5 transition-colors relative group cursor-pointer ${!notif.isRead ? "bg-blue-500/5" : ""}`}
                                         >
                                             <div className="flex gap-3 items-start">
-                                                <div className={`mt-1 p-2 rounded-lg bg-slate-800 border border-slate-700 shrink-0`}>
+                                                <div className={`mt-1 p-2 rounded-lg bg-white/5 border border-white/10 shrink-0`}>
                                                     {getIcon(notif.type)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start gap-2 mb-1">
-                                                        <h4 className={`text-sm font-medium ${notif.isRead ? "text-slate-300" : "text-white"}`}>
+                                                        <h4 className={`text-sm font-medium ${notif.isRead ? "text-theme-secondary" : "text-theme-primary"}`}>
                                                             {notif.title}
                                                         </h4>
-                                                        <span className="text-xs text-slate-500 whitespace-nowrap">
+                                                        <span className="text-xs text-theme-secondary whitespace-nowrap">
                                                             {localStorage.getItem('notification_date_' + notif.id) ||
                                                                 (notif.createdAt ? formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: fr }) : '')}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
+                                                    <p className="text-xs text-theme-secondary leading-relaxed line-clamp-2">
                                                         {notif.message}
                                                     </p>
                                                 </div>
@@ -129,8 +129,8 @@ export default function Notifications() {
                             )}
                         </div>
 
-                        <div className="p-2 border-t border-slate-800 bg-slate-900/50 text-center">
-                            <button className="text-xs text-slate-500 hover:text-white transition-colors py-1">
+                        <div className="p-2 border-t border-white/10 bg-white/5 text-center">
+                            <button className="text-xs text-theme-secondary hover:text-theme-primary transition-colors py-1">
                                 Voir tout l'historique
                             </button>
                         </div>

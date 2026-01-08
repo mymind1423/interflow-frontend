@@ -110,46 +110,46 @@ export default function CompanyApplications() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6">Gestion des Candidatures</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary mb-6">Gestion des Candidatures</h1>
 
             <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex bg-slate-900 border border-slate-800 rounded-xl p-1 overflow-x-auto no-scrollbar">
+                <div className="flex glass-panel !p-1 overflow-x-auto no-scrollbar shadow-sm rounded-xl">
                     {["ALL", "PENDING", "ACCEPTED", "REJECTED"].map(f => (
                         <button key={f} onClick={() => setFilter(f)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${filter === f ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}>
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${filter === f ? "bg-blue-600 shadow-md text-white" : "text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/5"}`}>
                             {f === "ALL" ? "Toutes" : f === "PENDING" ? "En attente" : f === "ACCEPTED" ? "Acceptées" : "Refusées"}
                         </button>
                     ))}
                 </div>
 
                 {/* View Toggle */}
-                <div className="flex bg-slate-900 border border-slate-800 rounded-lg p-1 gap-1 shrink-0">
+                <div className="flex glass-panel !p-1 gap-1 shrink-0 shadow-sm rounded-lg">
                     <button
                         onClick={handleExport}
-                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+                        className="p-2 rounded-lg text-theme-secondary hover:text-blue-600 dark:hover:text-white hover:bg-white/5 transition-all"
                         title="Exporter en Excel"
                     >
                         <Download size={18} />
                     </button>
-                    <div className="w-px bg-slate-800 mx-1 my-1"></div>
+                    <div className="w-px bg-white/10 mx-1 my-1"></div>
                     <button
                         onClick={() => setViewMode("card")}
-                        className={`p-2 rounded-lg transition-all ${viewMode === "card" ? "bg-slate-800 text-white shadow" : "text-slate-400 hover:text-white"}`}
+                        className={`p-2 rounded-lg transition-all ${viewMode === "card" ? "bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm" : "text-theme-secondary hover:text-blue-600 dark:hover:text-white hover:bg-white/5"}`}
                     >
                         <LayoutGrid size={18} />
                     </button>
                     <button
                         onClick={() => setViewMode("list")}
-                        className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-slate-800 text-white shadow" : "text-slate-400 hover:text-white"}`}
+                        className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm" : "text-theme-secondary hover:text-blue-600 dark:hover:text-white hover:bg-white/5"}`}
                     >
                         <List size={18} />
                     </button>
                 </div>
 
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-secondary" size={18} />
                     <input type="text" placeholder="Rechercher par nom ou poste..."
-                        className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white outline-none focus:border-blue-500 transition-colors"
+                        className="w-full glass-panel pl-10 pr-4 py-2.5 text-theme-primary font-medium outline-none focus:border-blue-500 rounded-xl transition-all placeholder-theme-secondary/50 shadow-sm"
                         value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
             </div>
@@ -165,15 +165,15 @@ export default function CompanyApplications() {
                             return (
                                 <div key={app.id}
                                     onClick={() => setViewingApp(app)}
-                                    className={`group flex items-center gap-4 p-4 rounded-2xl border backdrop-blur-sm transition-all cursor-pointer bg-slate-900/40 border-slate-800 hover:bg-slate-800/60 hover:border-slate-700
-                                ${app.status === 'ACCEPTED' ? 'hover:border-emerald-500/30' : app.status === 'REJECTED' ? 'hover:border-red-500/30' : 'hover:border-blue-500/30'}`}
+                                    className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer glass-panel hover:border-blue-300 dark:hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-100 dark:hover:shadow-none hover:-translate-y-0.5
+                                ${app.status === 'ACCEPTED' ? 'hover:border-emerald-300 dark:hover:border-emerald-500/50' : app.status === 'REJECTED' ? 'hover:border-red-300 dark:hover:border-red-500/50' : 'hover:border-blue-300 dark:hover:border-blue-500/50'}`}
                                 >
                                     {/* Avatar */}
-                                    <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden border border-slate-700">
+                                    <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden border border-white/10 shadow-sm">
                                         {app.applicantPhoto ? (
                                             <img src={app.applicantPhoto} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 font-bold">
+                                            <div className="w-full h-full bg-white/5 flex items-center justify-center text-theme-secondary font-bold">
                                                 {app.applicantName ? app.applicantName.substring(0, 2) : "??"}
                                             </div>
                                         )}
@@ -182,21 +182,21 @@ export default function CompanyApplications() {
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-3">
-                                            <h3 className="font-bold text-white text-base truncate">{app.applicantName}</h3>
-                                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider
-                                            ${app.status === 'ACCEPTED' ? 'bg-emerald-500/10 text-emerald-400' :
-                                                    app.status === 'REJECTED' ? 'bg-red-500/10 text-red-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                            <h3 className="font-bold text-theme-primary text-base truncate">{app.applicantName}</h3>
+                                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider border
+                                            ${app.status === 'ACCEPTED' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20' :
+                                                    app.status === 'REJECTED' ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-100 dark:border-red-500/20' : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-500/20'}`}>
                                                 {app.status === 'ACCEPTED' ? 'Acceptée' : app.status === 'REJECTED' ? 'Refusée' : 'En attente'}
                                             </span>
                                         </div>
-                                        <p className="text-slate-400 text-sm truncate flex items-center gap-2">
-                                            <span className="text-blue-400 font-medium">{app.jobTitle}</span>
-                                            <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                                            <span>{app.domaine || "Domaine N/A"}</span>
+                                        <p className="text-theme-secondary text-sm truncate flex items-center gap-2">
+                                            <span className="text-blue-600 dark:text-blue-400 font-medium">{app.jobTitle}</span>
+                                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                            <span className="text-theme-secondary">{app.domaine || "Domaine N/A"}</span>
                                             {app.dateOfBirth && (
                                                 <>
-                                                    <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                                                    <span className="text-slate-300 font-bold">{calculateAge(app.dateOfBirth)} ans</span>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                                    <span className="text-theme-secondary font-bold">{calculateAge(app.dateOfBirth)} ans</span>
                                                 </>
                                             )}
                                         </p>
@@ -206,15 +206,15 @@ export default function CompanyApplications() {
                                     <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                                         {app.status === 'PENDING' ? (
                                             <>
-                                                <button onClick={() => requestAction(app.id, "ACCEPTED")} disabled={processingAction.id === app.id} className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-colors disabled:opacity-50" title="Accepter">
+                                                <button onClick={() => requestAction(app.id, "ACCEPTED")} disabled={processingAction.id === app.id} className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 transition-colors disabled:opacity-50 border border-emerald-100 dark:border-emerald-500/20 hover:border-emerald-500" title="Accepter">
                                                     {processingAction.id === app.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
                                                 </button>
-                                                <button onClick={() => requestAction(app.id, "REJECTED")} disabled={processingAction.id === app.id} className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50" title="Refuser">
+                                                <button onClick={() => requestAction(app.id, "REJECTED")} disabled={processingAction.id === app.id} className="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 transition-colors disabled:opacity-50 border border-red-100 dark:border-red-500/20 hover:border-red-500" title="Refuser">
                                                     {processingAction.id === app.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
                                                 </button>
                                             </>
                                         ) : (
-                                            <div className={`p-2 rounded-full ${app.status === 'ACCEPTED' ? 'text-emerald-500 bg-emerald-500/5' : 'text-red-500 bg-red-500/5'}`}>
+                                            <div className={`p-2 rounded-full border ${app.status === 'ACCEPTED' ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'text-red-500 bg-red-50 dark:bg-red-500/10 border-red-100 dark:border-red-500/20'}`}>
                                                 {app.status === 'ACCEPTED' ? <CheckCircle size={20} /> : <XCircle size={20} />}
                                             </div>
                                         )}
@@ -225,11 +225,11 @@ export default function CompanyApplications() {
 
                         return (
                             <div key={app.id} onClick={() => setViewingApp(app)}
-                                className={`group relative bg-gradient-to-br from-slate-800/60 to-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-5 sm:p-6 cursor-pointer hover:border-white/20 transition-all duration-300 hover:-translate-y-2 overflow-hidden
-                                ${app.status === 'ACCEPTED' ? 'hover:shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)]' :
-                                        app.status === 'REJECTED' ? 'hover:shadow-[0_0_40px_-10px_rgba(239,68,68,0.5)]' :
-                                            'hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.5)]'}`}>
-                                <div className={`absolute -top-24 -right-24 w-72 h-72 rounded-full blur-[90px] opacity-30 transition-colors duration-700 pointer-events-none 
+                                className={`group relative glass-panel rounded-[2rem] p-5 sm:p-6 cursor-pointer hover:border-blue-300 dark:hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-2 overflow-hidden hover:shadow-2xl hover:shadow-blue-200/50 dark:hover:shadow-blue-900/20
+                                ${app.status === 'ACCEPTED' ? 'hover:border-emerald-300' :
+                                        app.status === 'REJECTED' ? 'hover:border-red-300' :
+                                            'hover:border-blue-300'}`}>
+                                <div className={`absolute -top-24 -right-24 w-72 h-72 rounded-full blur-[90px] opacity-10 transition-colors duration-700 pointer-events-none 
                                 ${app.status === 'ACCEPTED' ? 'bg-emerald-500' :
                                         app.status === 'REJECTED' ? 'bg-red-500' : 'bg-blue-600'}`}></div>
 
@@ -237,18 +237,18 @@ export default function CompanyApplications() {
                                     <div className="mb-6 flex-1">
                                         <div className="flex items-start gap-4">
                                             <div className="relative shrink-0">
-                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 shadow-2xl transition-all duration-500 transform group-hover:scale-105
-                                            ${app.status === 'ACCEPTED' ? 'border-emerald-500/50 shadow-emerald-500/30' :
-                                                        app.status === 'REJECTED' ? 'border-red-500/50 shadow-red-500/30' : 'border-blue-500/50 shadow-blue-500/30'}`}>
+                                                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 shadow-lg transition-all duration-500 transform group-hover:scale-105
+                                            ${app.status === 'ACCEPTED' ? 'border-emerald-200 dark:border-emerald-500/30 shadow-emerald-100 dark:shadow-emerald-900/20' :
+                                                        app.status === 'REJECTED' ? 'border-red-200 dark:border-red-500/30 shadow-red-100 dark:shadow-red-900/20' : 'border-blue-200 dark:border-blue-500/30 shadow-blue-100 dark:shadow-blue-900/20'}`}>
                                                     {app.applicantPhoto ? (
                                                         <img src={app.applicantPhoto} alt="" className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xl">
+                                                        <div className="w-full h-full bg-white/5 flex items-center justify-center text-theme-secondary font-bold text-xl">
                                                             {app.applicantName ? app.applicantName.substring(0, 2) : "??"}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className={`absolute -bottom-3 -right-3 w-8 h-8 rounded-full border-4 border-slate-900 flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110
+                                                <div className={`absolute -bottom-3 -right-3 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-110
                                             ${app.status === 'ACCEPTED' ? 'bg-emerald-500' : app.status === 'REJECTED' ? 'bg-red-500' : 'bg-amber-500'}`}>
                                                     {app.status === 'ACCEPTED' ? <CheckCircle size={14} strokeWidth={3} /> :
                                                         app.status === 'REJECTED' ? <XCircle size={14} strokeWidth={3} /> :
@@ -256,11 +256,11 @@ export default function CompanyApplications() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <h3 className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-all mb-1">{app.applicantName}</h3>
+                                                <h3 className="text-xl font-bold text-theme-primary group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">{app.applicantName}</h3>
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-blue-300 text-xs font-bold uppercase tracking-wider">{app.jobTitle}</span>
+                                                    <span className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider">{app.jobTitle}</span>
                                                     {(app.domaine || app.grade) && (
-                                                        <span className="text-slate-400 text-xs flex items-center gap-1">
+                                                        <span className="text-theme-secondary text-xs flex items-center gap-1 font-medium">
                                                             {app.domaine} {app.grade && `• ${app.grade}`}
                                                             {app.dateOfBirth && ` • ${calculateAge(app.dateOfBirth)} ans`}
                                                         </span>
@@ -269,22 +269,22 @@ export default function CompanyApplications() {
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap gap-2 mt-6">
-                                            {app.cvUrl && (<a href={app.cvUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 text-xs font-bold bg-slate-800/80 hover:bg-white hover:text-slate-900 px-4 py-2.5 rounded-xl text-slate-300 transition-all border border-white/5 hover:border-white shadow-lg"><FileText size={14} className="text-blue-400 group-hover:text-blue-600" /> CV</a>)}
-                                            {app.diplomaUrl && (<a href={app.diplomaUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 text-xs font-bold bg-slate-800/80 hover:bg-white hover:text-slate-900 px-4 py-2.5 rounded-xl text-slate-300 transition-all border border-white/5 hover:border-white shadow-lg"><FileText size={14} className="text-purple-400 group-hover:text-purple-600" /> Diplôme</a>)}
+                                            {app.cvUrl && (<a href={app.cvUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 text-xs font-bold bg-white/5 hover:bg-blue-50 dark:hover:bg-blue-500/20 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2.5 rounded-xl text-theme-secondary transition-all border border-white/10 hover:border-blue-300 dark:hover:border-blue-500/40 shadow-sm"><FileText size={14} className="text-blue-500 dark:text-blue-400" /> CV</a>)}
+                                            {app.diplomaUrl && (<a href={app.diplomaUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 text-xs font-bold bg-white/5 hover:bg-purple-50 dark:hover:bg-purple-500/20 hover:text-purple-600 dark:hover:text-purple-400 px-4 py-2.5 rounded-xl text-theme-secondary transition-all border border-white/10 hover:border-purple-300 dark:hover:border-purple-500/40 shadow-sm"><FileText size={14} className="text-purple-500 dark:text-purple-400" /> Diplôme</a>)}
                                         </div>
                                     </div>
                                     <div className="pt-5 border-t border-white/10 flex items-center gap-3">
                                         {app.status === 'PENDING' ? (
                                             <>
-                                                <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "ACCEPTED"); }} disabled={processingAction.id === app.id} className="flex-1 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/20 hover:border-emerald-500 text-emerald-400 hover:text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/btn shadow-[0_0_20px_-5px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] disabled:opacity-50 disabled:cursor-not-allowed">
+                                                <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "ACCEPTED"); }} disabled={processingAction.id === app.id} className="flex-1 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-200 dark:border-emerald-500/20 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/btn shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
                                                     {processingAction.id === app.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} className="group-hover/btn:scale-110 transition-transform" /> Accepter</>}
                                                 </button>
-                                                <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "REJECTED"); }} disabled={processingAction.id === app.id} className="flex-1 bg-red-500/10 hover:bg-red-500 border border-red-500/20 hover:border-red-500 text-red-500 hover:text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/btn-reject disabled:opacity-50 disabled:cursor-not-allowed">
+                                                <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "REJECTED"); }} disabled={processingAction.id === app.id} className="flex-1 bg-red-50 dark:bg-red-500/10 hover:bg-red-500 border border-red-200 dark:border-red-500/20 hover:border-red-500 text-red-600 dark:text-red-400 hover:text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/btn-reject disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                                                     {processingAction.id === app.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <><XCircle size={18} className="group-hover/btn-reject:scale-110 transition-transform" /> Refuser</>}
                                                 </button>
                                             </>
                                         ) : (
-                                            <div className={`w-full py-3 rounded-xl font-black text-sm border flex items-center justify-center gap-3 shadow-lg ${app.status === 'ACCEPTED' ? 'bg-gradient-to-r from-emerald-500/20 to-emerald-900/20 border-emerald-500/30 text-emerald-400' : 'bg-gradient-to-r from-red-500/20 to-red-900/20 border-red-500/30 text-red-400'}`}>
+                                            <div className={`w-full py-3 rounded-xl font-black text-sm border flex items-center justify-center gap-3 shadow-none bg-white/5 ${app.status === 'ACCEPTED' ? 'border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400'}`}>
                                                 {app.status === 'ACCEPTED' ? <CheckCircle size={18} strokeWidth={2.5} /> : <XCircle size={18} strokeWidth={2.5} />}
                                                 <span className="uppercase tracking-wide">{app.status === 'ACCEPTED' ? 'Acceptée' : 'Refusée'}</span>
                                             </div>
@@ -298,49 +298,49 @@ export default function CompanyApplications() {
             )}
 
             {viewingApp && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row animate-fade-in-up">
-                        <div className="w-full md:w-1/3 bg-slate-950 p-6 border-r border-slate-800">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+                    <div className="glass-panel rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row animate-fade-in-up">
+                        <div className="w-full md:w-1/3 bg-slate-50 border-r border-slate-200 dark:border-white/10 p-6">
                             <div className="flex flex-col items-center text-center mb-6">
-                                <div className="w-24 h-24 rounded-full bg-slate-800 overflow-hidden border-2 border-slate-700 mb-4 shadow-lg shrink-0">
-                                    {viewingApp.applicantPhoto ? (<img src={viewingApp.applicantPhoto} alt="" className="w-full h-full object-cover" />) : (<div className="w-full h-full flex items-center justify-center text-slate-500 text-2xl font-bold">{viewingApp.applicantName ? viewingApp.applicantName.substring(0, 2) : "??"}</div>)}
+                                <div className="w-24 h-24 rounded-full bg-white dark:bg-slate-700 overflow-hidden border-4 border-white dark:border-slate-600 mb-4 shadow-sm shrink-0">
+                                    {viewingApp.applicantPhoto ? (<img src={viewingApp.applicantPhoto} alt="" className="w-full h-full object-cover" />) : (<div className="w-full h-full flex items-center justify-center text-theme-secondary font-bold text-2xl bg-white/10">{viewingApp.applicantName ? viewingApp.applicantName.substring(0, 2) : "??"}</div>)}
                                 </div>
-                                <h2 className="text-xl font-bold text-white">{viewingApp.applicantName}</h2>
-                                <p className="text-blue-400 font-medium">{viewingApp.domaine || "Domaine non spécifié"}</p>
+                                <h2 className="text-xl font-black text-theme-primary">{viewingApp.applicantName}</h2>
+                                <p className="text-blue-600 dark:text-blue-400 font-bold text-sm mt-1">{viewingApp.domaine || "Domaine non spécifié"}</p>
                             </div>
                             <div className="space-y-4 text-sm">
-                                <div><p className="text-slate-500 font-medium mb-1">Contact</p><p className="text-slate-300 truncate" title={viewingApp.email}>{viewingApp.email}</p><p className="text-slate-300">{viewingApp.phone || "N/A"}</p><p className="text-slate-300 line-clamp-2">{viewingApp.address || "N/A"}</p>
-                                    {viewingApp.dateOfBirth && <p className="text-slate-300 mt-1 font-bold flex items-center gap-2"><Calendar size={14} className="text-blue-500" /> {calculateAge(viewingApp.dateOfBirth)} ans</p>}
+                                <div><p className="text-theme-secondary font-bold text-xs uppercase tracking-wider mb-1">Contact</p><p className="text-theme-primary font-medium truncate" title={viewingApp.email}>{viewingApp.email}</p><p className="text-theme-primary font-medium">{viewingApp.phone || "N/A"}</p><p className="text-theme-primary font-medium line-clamp-2">{viewingApp.address || "N/A"}</p>
+                                    {viewingApp.dateOfBirth && <p className="text-theme-secondary mt-1 font-bold flex items-center gap-2"><Calendar size={14} className="text-blue-500" /> {calculateAge(viewingApp.dateOfBirth)} ans</p>}
                                 </div>
-                                <div><p className="text-slate-500 font-medium mb-1">Faculté / École</p><p className="text-slate-300">{viewingApp.faculty || "N/A"}</p></div>
-                                <div><p className="text-slate-500 font-medium mb-1">Niveau</p><p className="text-slate-300">{viewingApp.grade || "N/A"}</p></div>
+                                <div><p className="text-theme-secondary font-bold text-xs uppercase tracking-wider mb-1">Faculté / École</p><p className="text-theme-primary font-medium">{viewingApp.faculty || "N/A"}</p></div>
+                                <div><p className="text-theme-secondary font-bold text-xs uppercase tracking-wider mb-1">Niveau</p><p className="text-theme-primary font-medium">{viewingApp.grade || "N/A"}</p></div>
                             </div>
-                            <hr className="my-6 border-slate-800" />
+                            <hr className="my-6 border-slate-200 dark:border-slate-700" />
                             <div className="flex flex-col gap-3">
                                 {viewingApp.status === 'PENDING' ? (
                                     <>
-                                        <button onClick={() => { requestAction(viewingApp.id, "ACCEPTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <button onClick={() => { requestAction(viewingApp.id, "ACCEPTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20">
                                             {processingAction.id === viewingApp.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} /> Accepter</>}
                                         </button>
-                                        <button onClick={() => { requestAction(viewingApp.id, "REJECTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-2.5 bg-red-500/10 hover:bg-red-600 hover:text-white border border-red-500/20 hover:border-red-600 text-red-500 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 group/btn-reject-modal disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <button onClick={() => { requestAction(viewingApp.id, "REJECTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-2.5 bg-white dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-500/20 text-red-500 hover:text-red-600 dark:text-red-400 border border-slate-200 dark:border-slate-600 hover:border-red-200 dark:hover:border-red-500/40 rounded-xl font-bold transition-all flex items-center justify-center gap-2 group/btn-reject-modal disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                                             {processingAction.id === viewingApp.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <><XCircle size={18} className="group-hover/btn-reject-modal:scale-110 transition-transform" /> Refuser</>}
                                         </button>
                                     </>
                                 ) : (
-                                    <div className={`w-full py-3 rounded-xl font-bold text-base border flex items-center justify-center gap-2 ${viewingApp.status === 'ACCEPTED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
+                                    <div className={`w-full py-3 rounded-xl font-bold text-base border flex items-center justify-center gap-2 ${viewingApp.status === 'ACCEPTED' ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400'}`}>
                                         {viewingApp.status === 'ACCEPTED' ? <CheckCircle size={20} /> : <XCircle size={20} />}
                                         {viewingApp.status === 'ACCEPTED' ? 'Candidature Acceptée' : 'Candidature Refusée'}
                                     </div>
                                 )}
 
                             </div>
-                            <button onClick={() => setViewingApp(null)} className="mt-4 w-full py-2 text-slate-500 hover:text-white transition-colors">Fermer</button>
+                            <button onClick={() => setViewingApp(null)} className="mt-4 w-full py-2 text-theme-secondary hover:text-theme-primary transition-colors font-medium">Fermer</button>
                         </div>
-                        <div className="flex-1 p-6 bg-slate-900">
-                            <div className="mb-6"><h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-blue-500" /> Lettre de motivation</h3><div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-slate-300 whitespace-pre-wrap leading-relaxed min-h-[100px]">{viewingApp.coverLetter || "Le candidat n'a pas ajouté de lettre de motivation."}</div></div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-purple-500" /> CV</h3>{viewingApp.cvUrl ? (<iframe src={viewingApp.cvUrl} className="w-full h-64 rounded-xl border border-slate-800 bg-white" title="CV Preview" />) : (<div className="h-64 bg-slate-950/50 rounded-xl border border-slate-800 flex items-center justify-center text-slate-500 italic">Non disponible</div>)}{viewingApp.cvUrl && (<a href={viewingApp.cvUrl} target="_blank" rel="noreferrer" className="block mt-2 text-center text-sm text-blue-400 hover:underline font-medium">Ouvrir en plein écran</a>)}</div>
-                                <div><h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-pink-500" /> Diplôme</h3>{viewingApp.diplomaUrl ? (<iframe src={viewingApp.diplomaUrl} className="w-full h-64 rounded-xl border border-slate-800 bg-white" title="Diploma Preview" />) : (<div className="h-64 bg-slate-950/50 rounded-xl border border-slate-800 flex items-center justify-center text-slate-500 italic">Non disponible</div>)}{viewingApp.diplomaUrl && (<a href={viewingApp.diplomaUrl} target="_blank" rel="noreferrer" className="block mt-2 text-center text-sm text-blue-400 hover:underline font-medium">Ouvrir en plein écran</a>)}</div>
+                        <div className="flex-1 p-6 sm:p-8 bg-transparent">
+                            <div className="mb-6"><h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-slate-600" /> Lettre de motivation</h3><div className="bg-white p-6 rounded-2xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed min-h-[100px] shadow-sm font-medium">{viewingApp.coverLetter || "Le candidat n'a pas ajouté de lettre de motivation."}</div></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-blue-900" /> CV</h3>{viewingApp.cvUrl ? (<iframe src={viewingApp.cvUrl} className="w-full h-64 rounded-xl border border-slate-200 dark:border-white/10 bg-white shadow-sm" title="CV Preview" />) : (<div className="h-64 bg-white border border-slate-200 dark:border-white/10 rounded-xl flex items-center justify-center text-slate-400 italic">Non disponible</div>)}{viewingApp.cvUrl && (<a href={viewingApp.cvUrl} target="_blank" rel="noreferrer" className="block mt-2 text-center text-sm text-blue-900 font-bold hover:underline">Ouvrir en plein écran</a>)}</div>
+                                <div><h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-slate-700" /> Diplôme</h3>{viewingApp.diplomaUrl ? (<iframe src={viewingApp.diplomaUrl} className="w-full h-64 rounded-xl border border-slate-200 dark:border-white/10 bg-white shadow-sm" title="Diploma Preview" />) : (<div className="h-64 bg-white border border-slate-200 dark:border-white/10 rounded-xl flex items-center justify-center text-slate-400 italic">Non disponible</div>)}{viewingApp.diplomaUrl && (<a href={viewingApp.diplomaUrl} target="_blank" rel="noreferrer" className="block mt-2 text-center text-sm text-blue-900 font-bold hover:underline">Ouvrir en plein écran</a>)}</div>
                             </div>
                         </div>
                     </div>

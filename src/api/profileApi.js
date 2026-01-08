@@ -1,4 +1,4 @@
-import { apiFetch, apiUpload } from "./client";
+import { apiFetch, apiUploadWithProgress } from "./client";
 
 export const profileApi = {
   get: () => apiFetch("/api/profile/get"),
@@ -7,24 +7,24 @@ export const profileApi = {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
-  uploadAvatar: (file) => {
+  uploadAvatar: (file, onProgress) => {
     const formData = new FormData();
     formData.append("file", file);
-    return apiUpload("/api/upload/avatar", formData);
+    return apiUploadWithProgress("/api/upload/avatar", formData, onProgress);
   },
-  uploadCv: (file) => {
+  uploadCv: (file, onProgress) => {
     const formData = new FormData();
     formData.append("file", file);
-    return apiUpload("/api/upload/cv", formData);
+    return apiUploadWithProgress("/api/upload/cv", formData, onProgress);
   },
-  uploadDiploma: (file) => {
+  uploadDiploma: (file, onProgress) => {
     const formData = new FormData();
     formData.append("file", file);
-    return apiUpload("/api/upload/diploma", formData);
+    return apiUploadWithProgress("/api/upload/diploma", formData, onProgress);
   },
-  uploadLogo: (file) => {
+  uploadLogo: (file, onProgress) => {
     const formData = new FormData();
     formData.append("file", file);
-    return apiUpload("/api/upload/logo", formData);
+    return apiUploadWithProgress("/api/upload/logo", formData, onProgress);
   },
 };

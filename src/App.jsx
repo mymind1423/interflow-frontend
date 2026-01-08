@@ -27,6 +27,7 @@ import StudentJobs from "./pages/student/StudentJobs";
 import PublicProfile from "./pages/shared/PublicProfile";
 import LiveInterviewDashboard from "./pages/company/LiveInterviewDashboard";
 import ActiveInterviewSession from "./pages/company/ActiveInterviewSession";
+import NotFound from "./pages/NotFound";
 
 import { AuthProvider } from "./authContext";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -76,13 +77,17 @@ function App() {
                   <Route path="/company/live" element={<LiveInterviewDashboard />} />
                   <Route path="/company/live/:id" element={<ActiveInterviewSession />} />
                 </Route>
+
+
+                {/* 404 Route */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
               <Footer />
             </BrowserRouter>
           </NotificationProvider>
         </ToastProvider>
       </ErrorBoundary>
-    </AuthProvider>
+    </AuthProvider >
   );
 }
 

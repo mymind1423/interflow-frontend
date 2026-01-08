@@ -105,17 +105,17 @@ export default function LiveInterviewDashboard() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div>
-                    <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-3">
-                        <MonitorPlay className="text-rose-500" size={40} />
+                    <h1 className="text-4xl font-black text-theme-primary tracking-tight flex items-center gap-3">
+                        <MonitorPlay className="text-blue-600 dark:text-blue-500" size={40} />
                         Live Manager
                     </h1>
-                    <p className="text-slate-400 mt-2 font-medium text-lg">Gérez vos entretiens en temps réel</p>
+                    <p className="text-theme-secondary mt-2 font-medium text-lg">Gérez vos entretiens en temps réel</p>
                 </div>
 
                 {activeTab === 'history' && (
                     <button
                         onClick={handleExportHistory}
-                        className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95"
+                        className="flex items-center gap-2 px-6 py-3 glass-panel border border-white/10 text-theme-primary rounded-2xl font-bold hover:bg-white/10 transition-all shadow-sm active:scale-95"
                     >
                         <Download size={20} /> Exporter Historique
                     </button>
@@ -123,7 +123,7 @@ export default function LiveInterviewDashboard() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 mb-8 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800/50 w-fit">
+            <div className="flex gap-4 mb-8 glass-panel p-1.5 rounded-2xl border border-white/10 w-fit shadow-sm">
                 <TabButton
                     active={activeTab === 'queue'}
                     onClick={() => setActiveTab('queue')}
@@ -143,7 +143,7 @@ export default function LiveInterviewDashboard() {
             {/* Content */}
             {loading ? (
                 <div className="flex items-center justify-center h-64">
-                    <Loader2 className="w-12 h-12 text-rose-500 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -205,30 +205,30 @@ function EditEvaluationModal({ interview, onClose, onSave, saving }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
         >
             <motion.div
                 initial={{ scale: 0.95, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.95, y: 20 }}
-                className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative"
+                className="glass-panel border border-white/10 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative"
             >
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors"
+                    className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full text-theme-secondary hover:text-theme-primary transition-colors"
                 >
                     <Video size={20} className="rotate-45" /> {/* Mock close icon */}
                 </button>
 
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl font-black text-white mb-2">Modifier l'Évaluation</h2>
-                    <p className="text-slate-400 font-bold">{interview.studentName}</p>
+                    <h2 className="text-2xl font-black text-theme-primary mb-2">Modifier l'Évaluation</h2>
+                    <p className="text-theme-secondary font-bold">{interview.studentName}</p>
                 </div>
 
                 <div className="space-y-6">
                     {/* Score */}
-                    <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block">Note Globale</label>
+                    <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                        <label className="text-xs font-black text-theme-secondary uppercase tracking-widest mb-3 block">Note Globale</label>
                         <div className="flex items-center justify-between gap-4">
                             <input
                                 type="range"
@@ -237,9 +237,9 @@ function EditEvaluationModal({ interview, onClose, onSave, saving }) {
                                 step="0.5"
                                 value={score}
                                 onChange={e => setScore(e.target.value)}
-                                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                                className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500"
                             />
-                            <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 shadow-inner shrink-0">
+                            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 shadow-sm shrink-0">
                                 <span className={`text-xl font-black ${score >= 7 ? 'text-emerald-500' : score >= 4 ? 'text-orange-500' : 'text-red-500'}`}>{score}</span>
                             </div>
                         </div>
@@ -247,11 +247,11 @@ function EditEvaluationModal({ interview, onClose, onSave, saving }) {
 
                     {/* Remarks */}
                     <div>
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block">Remarques</label>
+                        <label className="text-xs font-black text-theme-secondary uppercase tracking-widest mb-3 block">Remarques</label>
                         <textarea
                             value={remarks}
                             onChange={e => setRemarks(e.target.value)}
-                            className="w-full h-32 bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-rose-500/50 resize-none leading-relaxed"
+                            className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-theme-primary focus:outline-none focus:border-blue-500/50 resize-none leading-relaxed"
                         />
                     </div>
 
@@ -259,14 +259,14 @@ function EditEvaluationModal({ interview, onClose, onSave, saving }) {
                         <button
                             onClick={onClose}
                             disabled={saving}
-                            className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-black uppercase tracking-widest transition-all disabled:opacity-50"
+                            className="flex-1 py-4 bg-white/10 hover:bg-white/20 text-theme-secondary rounded-xl font-black uppercase tracking-widest transition-all disabled:opacity-50"
                         >
                             Annuler
                         </button>
                         <button
                             onClick={() => onSave(score, remarks)}
                             disabled={saving}
-                            className="flex-1 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {saving ? (
                                 <Loader2 size={20} className="animate-spin" />
@@ -286,14 +286,14 @@ function TabButton({ active, onClick, label, icon: Icon, count }) {
         <button
             onClick={onClick}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black transition-all relative ${active
-                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
-                : "text-slate-500 hover:text-white hover:bg-slate-800/50"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                : "text-theme-secondary hover:text-theme-primary hover:bg-white/10"
                 }`}
         >
             <Icon size={18} />
             {label}
             {count > 0 && (
-                <span className={`ml-2 px-2 py-0.5 rounded-md text-[10px] ${active ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"}`}>
+                <span className={`ml-2 px-2 py-0.5 rounded-md text-[10px] ${active ? "bg-white/20 text-white" : "bg-white/10 text-theme-secondary"}`}>
                     {count}
                 </span>
             )}
@@ -307,43 +307,43 @@ function QueueItem({ interview, onStart, idx }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className={`group bg-slate-900/40 border rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-900/80 transition-all border-l-4 shadow-xl ${interview.status === 'CHECKED_IN' ? 'border-l-emerald-500 border-emerald-500/20' : 'border-l-rose-500 border-slate-800/60'}`}
+            className={`group glass-panel border rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-xl hover:-translate-y-1 transition-all border-l-4 shadow-sm ${interview.status === 'CHECKED_IN' ? 'border-l-emerald-500 border-white/5' : 'border-l-blue-500 border-white/10'}`}
         >
             <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-slate-950 rounded-2xl flex flex-col items-center justify-center border border-slate-800 shadow-inner shrink-0 relative overflow-hidden">
+                <div className="w-20 h-20 bg-white/5 rounded-2xl flex flex-col items-center justify-center border border-white/10 shadow-sm shrink-0 relative overflow-hidden">
                     {interview.status === 'CHECKED_IN' && (
-                        <div className="absolute top-2 right-2 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 z-10 animate-pulse safe-indicator"></div>
+                        <div className="absolute top-2 right-2 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white z-10 animate-pulse safe-indicator"></div>
                     )}
 
                     {interview.studentPhoto ? (
                         <img src={interview.studentPhoto} alt={interview.studentName} className="w-full h-full object-cover" />
                     ) : (
                         <>
-                            <span className="text-3xl font-black text-white">{new Date(interview.dateTime).getDate()}</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{format(new Date(interview.dateTime), "MMM", { locale: fr })}</span>
+                            <span className="text-3xl font-black text-theme-primary">{new Date(interview.dateTime).getDate()}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-theme-secondary">{format(new Date(interview.dateTime), "MMM", { locale: fr })}</span>
                         </>
                     )}
                 </div>
                 <div>
                     <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-xl font-black text-white group-hover:text-rose-400 transition-colors">{interview.studentName}</h3>
+                        <h3 className="text-xl font-black text-theme-primary group-hover:text-blue-500 transition-colors">{interview.studentName}</h3>
                         {interview.status === 'CHECKED_IN' && (
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
                                 Présent
                             </span>
                         )}
                     </div>
-                    <p className="text-blue-400 font-bold text-sm mb-2 uppercase tracking-wide">{interview.title || "Entretien"}</p>
-                    <div className="flex items-center gap-4 text-sm text-slate-400 font-medium">
-                        <span className="flex items-center gap-1.5"><Clock size={14} className="text-rose-500" /> {format(new Date(interview.dateTime), "HH:mm")}</span>
-                        <span className="flex items-center gap-1.5"><User size={14} className="text-indigo-500" /> Candidat</span>
+                    <p className="text-blue-500 font-bold text-sm mb-2 uppercase tracking-wide">{interview.title || "Entretien"}</p>
+                    <div className="flex items-center gap-4 text-sm text-theme-secondary font-medium">
+                        <span className="flex items-center gap-1.5"><Clock size={14} className="text-blue-500" /> {format(new Date(interview.dateTime), "HH:mm")}</span>
+                        <span className="flex items-center gap-1.5"><User size={14} className="text-indigo-400" /> Candidat</span>
                     </div>
                 </div>
             </div>
 
             <button
                 onClick={onStart}
-                className="px-8 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-lg shadow-rose-600/20 active:scale-95 transition-all group-hover:scale-105"
+                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-lg shadow-blue-600/20 active:scale-95 transition-all group-hover:scale-105"
             >
                 <MonitorPlay size={18} /> Démarrer
             </button>
@@ -357,7 +357,7 @@ function HistoryItem({ interview, idx, onModify }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="bg-slate-900/20 border border-slate-800/40 rounded-[2rem] p-6 flex flex-col gap-4 hover:bg-slate-900/40 transition-all"
+            className="glass-panel border border-white/10 rounded-[2rem] p-6 flex flex-col gap-4 hover:shadow-lg transition-all"
         >
             <div className="flex justify-between items-start">
                 <div className="flex items-center gap-4">
@@ -365,27 +365,27 @@ function HistoryItem({ interview, idx, onModify }) {
                         <CheckCircle size={24} />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-white">{interview.studentName}</h3>
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{format(new Date(interview.dateTime), "dd MMM yyyy • HH:mm", { locale: fr })}</p>
+                        <h3 className="text-lg font-bold text-theme-primary">{interview.studentName}</h3>
+                        <p className="text-xs text-theme-secondary font-bold uppercase tracking-wider">{format(new Date(interview.dateTime), "dd MMM yyyy • HH:mm", { locale: fr })}</p>
                     </div>
                 </div>
-                <div className="px-4 py-2 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-xs text-slate-500 font-bold uppercase mr-2">Note</span>
-                    <span className={`text-lg font-black ${interview.score >= 7 ? 'text-emerald-400' : interview.score >= 4 ? 'text-orange-400' : 'text-red-400'}`}>
-                        {interview.score ? interview.score : '-'}<span className="text-slate-600 text-sm">/10</span>
+                <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/10">
+                    <span className="text-xs text-theme-secondary font-bold uppercase mr-2">Note</span>
+                    <span className={`text-lg font-black ${interview.score >= 7 ? 'text-emerald-500' : interview.score >= 4 ? 'text-orange-500' : 'text-red-500'}`}>
+                        {interview.score ? interview.score : '-'}<span className="text-theme-secondary text-sm">/10</span>
                     </span>
                 </div>
             </div>
 
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50">
-                <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Remarques</p>
-                <p className="text-slate-400 text-sm leading-relaxed">{interview.remarks || "Aucune remarque enregistrée."}</p>
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <p className="text-xs font-black text-theme-secondary uppercase tracking-widest mb-2">Remarques</p>
+                <p className="text-theme-primary text-sm leading-relaxed">{interview.remarks || "Aucune remarque enregistrée."}</p>
             </div>
 
             <div className="flex justify-end">
                 <button
                     onClick={onModify}
-                    className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-white hover:bg-blue-500/10 rounded-xl transition-all flex items-center gap-2"
+                    className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-theme-secondary hover:text-blue-600 hover:bg-white/10 rounded-xl transition-all flex items-center gap-2"
                 >
                     <FileText size={14} /> Modifier Note
                 </button>
@@ -396,7 +396,7 @@ function HistoryItem({ interview, idx, onModify }) {
 
 function EmptyState({ message, icon: Icon }) {
     return (
-        <div className="flex flex-col items-center justify-center py-24 bg-slate-900/20 rounded-[3rem] border-2 border-dashed border-slate-800 text-slate-500">
+        <div className="flex flex-col items-center justify-center py-24 glass-panel rounded-[3rem] border-2 border-dashed border-white/10 text-theme-secondary">
             <Icon size={48} className="mb-4 opacity-50" />
             <p className="font-bold text-lg">{message}</p>
         </div>

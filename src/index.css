@@ -12,49 +12,109 @@
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
   --color-primary-950: #172554;
+
+  /* Custom Theme Colors Mapping */
+  --color-theme-primary: var(--text-primary);
+  --color-theme-secondary: var(--text-secondary);
 }
 
 :root {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #020617;
-  color: #f8fafc;
+  /* Default Dark Theme Variables (Preserving "Sombre Premium") */
+  --bg-body: #020617;
+  --bg-mesh: radial-gradient(circle at top right, #1e1b4b, #020617);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --glass-panel: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --accent-gradient: linear-gradient(to right, #3b82f6, #6366f1);
+  color-scheme: dark;
+}
+
+/* Light Theme - "Deep Aurora" (Vibrant, Icy, Organic) */
+:root[data-theme='light'] {
+  --bg-body: #eef2ff;
+
+  --bg-mesh:
+    radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+    radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+
+  /* Simplified mesh definition to avoid parser errors */
+  --bg-mesh-light:
+    radial-gradient(at 15% 15%, rgba(125, 211, 252, 0.4) 0px, transparent 55%),
+    radial-gradient(at 85% 15%, rgba(192, 132, 252, 0.4) 0px, transparent 55%),
+    radial-gradient(at 85% 85%, rgba(110, 231, 183, 0.4) 0px, transparent 55%),
+    radial-gradient(at 15% 85%, rgba(253, 164, 175, 0.4) 0px, transparent 55%);
+
+  --text-primary: #020617;
+  --text-secondary: #334155;
+
+  /* Vibrant Glass - Tinted slightly Blue/White */
+  --glass-panel: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+
+  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  /* Midnight Gradient */
-  background: radial-gradient(circle at top right, #1e1b4b, #020617);
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Theme Utilities */
+.theme-bg-mesh {
+  background: var(--bg-mesh);
+}
+
+:root[data-theme='light'] body {
+  background: var(--bg-mesh-light);
   background-attachment: fixed;
-  /* Default text color */
-  @apply text-slate-200;
+  background-size: cover;
+  /* Ensure text color is forced on body in light mode */
+  color: var(--text-primary);
 }
 
-/* Glassmorphism Utilities */
-.glass-card {
-  @apply bg-slate-900/50 backdrop-blur-md border border-slate-800 shadow-xl;
+:root[data-theme='dark'] body {
+  background: var(--bg-mesh);
+  background-attachment: fixed;
 }
 
-.hover-glass-card {
-  @apply transition-all duration-300 hover:bg-slate-800/60 hover:border-slate-700;
+
+/* Aurora Glass Component */
+.glass-panel {
+  background: var(--glass-panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-primary);
+  /* Ensure glass panels adopt the correct text color */
 }
 
-/* Custom Scrollbar (Optional Polish) */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #020617;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+.text-gradient {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Driver.js Theme Overrides */
