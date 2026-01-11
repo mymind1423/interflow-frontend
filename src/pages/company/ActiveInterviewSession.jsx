@@ -22,6 +22,7 @@ export default function ActiveInterviewSession() {
     // Evaluation Form
     const [remarks, setRemarks] = useState("");
     const [score, setScore] = useState(5);
+    const [isRetained, setIsRetained] = useState(false);
 
     // UI State
     const [activeTab, setActiveTab] = useState("cv");
@@ -70,6 +71,18 @@ export default function ActiveInterviewSession() {
                 // Pre-fill if exists
                 if (found.score) setScore(found.score);
                 if (found.remarks) setRemarks(found.remarks);
+                // Note: companyApi.getInterviews() usually returns a list, deeper detail might need getCompanyEvaluation
+                // But for now, we rely on what we have. If we want pre-fill persistence, we should probably fetch evaluation specifically.
+                // Let's do that for robustness if studentId is present.
+                if (found.studentId) {
+                    companyApi.getEvaluation(found.studentId).then(ev => {
+                        if (ev) {
+                            if (ev.rating) setScore(ev.rating);
+                            if (ev.comment) setRemarks(ev.comment);
+                            if (ev.isRetained) setIsRetained(ev.isRetained);
+                        }
+                    }).catch(err => console.log("No prev eval", err));
+                }
             } else {
                 toast.error("Entretien introuvable");
                 navigate('/company/live');
@@ -143,6 +156,7 @@ export default function ActiveInterviewSession() {
                 studentId: interview.studentId,
                 rating: score,
                 comment: remarks,
+                isRetained: isRetained,
                 status: 'COMPLETED'
             });
             // Also update status
@@ -181,7 +195,7 @@ export default function ActiveInterviewSession() {
             {/* Background handled by global theme, removing manual divs */}
 
             {/* Top Bar */}
-            <header className="h-20 border-b border-white/10 bg-white/10 z-10 flex items-center justify-between px-8 shrink-0 backdrop-blur-md shadow-sm glass-panel">
+            <header className="h-20 border-b !border-slate-300 dark:border-white/10 bg-white/10 z-10 flex items-center justify-between px-8 shrink-0 backdrop-blur-md shadow-sm glass-panel">
                 <div className="flex items-center gap-4">
                     <button onClick={() => navigate('/company/live')} className="p-2 hover:bg-white/10 rounded-xl text-theme-secondary hover:text-theme-primary transition-all">
                         <ChevronLeft size={24} />
@@ -194,14 +208,14 @@ export default function ActiveInterviewSession() {
 
                 <div className="flex items-center gap-8">
                     {/* Timer Control */}
-                    <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner">
+                    <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border !border-slate-300 dark:border-white/10 shadow-inner">
                         {!isTimerRunning && timeLeft === null ? (
                             <div className="flex items-center gap-2">
                                 <input
                                     type="number"
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value)}
-                                    className="w-12 bg-transparent text-center font-bold outline-none border-b border-white/20 focus:border-blue-500 text-lg text-theme-primary"
+                                    className="w-12 bg-transparent text-center font-bold outline-none border-b !border-slate-300 dark:border-white/20 focus:border-blue-500 text-lg text-theme-primary"
                                 />
                                 <span className="text-xs font-bold text-theme-secondary uppercase mr-2">MIN</span>
                                 <button onClick={handleStartTimer} className="p-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-white shadow-lg shadow-blue-600/20 active:scale-95 transition-all">
@@ -245,7 +259,7 @@ export default function ActiveInterviewSession() {
 
                 {/* Left: CV & Tools */}
                 <div className="flex-1 p-6 flex flex-col gap-6 overflow-hidden">
-                    <div className="flex gap-4 border-b border-white/10 pb-4">
+                    <div className="flex gap-4 border-b !border-slate-300 dark:border-white/10 pb-4">
                         <button
                             onClick={() => setActiveTab('cv')}
                             className={`pb-2 px-2 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'cv' ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' : 'text-theme-secondary hover:text-theme-primary'}`}
@@ -254,7 +268,7 @@ export default function ActiveInterviewSession() {
                         </button>
                     </div>
 
-                    <div className="flex-1 glass-panel rounded-2xl border border-white/10 overflow-hidden relative shadow-sm">
+                    <div className="flex-1 glass-panel rounded-2xl border !border-slate-300 dark:border-white/10 overflow-hidden relative shadow-sm">
                         {activeTab === 'cv' && (
                             interview.cvUrl ? (
                                 <iframe src={interview.cvUrl} className="w-full h-full bg-white/50 dark:bg-slate-800" title="CV" />
@@ -269,14 +283,14 @@ export default function ActiveInterviewSession() {
                 </div>
 
                 {/* Right: Evaluation Panel */}
-                <div className="w-96 glass-panel border-l border-white/10 p-6 flex flex-col gap-6 shadow-xl shrink-0 overflow-y-auto">
+                <div className="w-96 glass-panel border-l !border-slate-300 dark:border-white/10 p-6 flex flex-col gap-6 shadow-xl shrink-0 overflow-y-auto">
                     <div>
                         <h2 className="text-xl font-black text-theme-primary mb-1">Évaluation</h2>
                         <p className="text-xs text-theme-secondary font-bold uppercase tracking-widest">Notez le candidat en temps réel</p>
                     </div>
 
                     {/* Score */}
-                    <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                    <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-2xl border !border-slate-300 dark:border-white/10">
                         <label className="text-xs font-black text-theme-secondary uppercase tracking-widest mb-3 block">Note Globale</label>
                         <div className="flex items-center justify-between gap-4">
                             <input
@@ -286,9 +300,9 @@ export default function ActiveInterviewSession() {
                                 step="0.5" // Allow halves
                                 value={score}
                                 onChange={e => setScore(e.target.value)}
-                                className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                className="w-full h-2 bg-slate-300 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500"
                             />
-                            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 shadow-sm shrink-0">
+                            <div className="w-12 h-12 bg-white dark:bg-white/10 rounded-xl flex items-center justify-center border border-slate-300 dark:border-white/10 shadow-sm shrink-0">
                                 <span className={`text-xl font-black ${score >= 7 ? 'text-emerald-500' : score >= 4 ? 'text-orange-500' : 'text-red-500'}`}>{score}</span>
                             </div>
                         </div>
@@ -301,11 +315,43 @@ export default function ActiveInterviewSession() {
                             value={remarks}
                             onChange={e => setRemarks(e.target.value)}
                             placeholder="Points forts, points faibles, attitude..."
-                            className="flex-1 w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-theme-primary focus:outline-none focus:border-blue-500/50 resize-none leading-relaxed placeholder-theme-secondary/50"
+                            className="flex-1 w-full bg-slate-100 dark:bg-white/5 border !border-slate-300 dark:border-white/10 rounded-2xl p-4 text-sm text-theme-primary focus:outline-none focus:border-blue-500/50 resize-none leading-relaxed placeholder-theme-secondary/50 mb-4"
                         />
+
+                        {/* New Retained Checkbox */}
+                        {/* Retained Toggle Card */}
+                        <div
+                            onClick={() => setIsRetained(!isRetained)}
+                            className={`relative cursor-pointer group overflow-hidden rounded-2xl border-2 transition-all duration-300 p-5 flex items-center gap-4 ${isRetained
+                                ? "bg-indigo-600 border-indigo-500 shadow-xl shadow-indigo-600/30 scale-[1.02]"
+                                : "bg-slate-100 dark:bg-white/5 !border-slate-300 dark:!border-white/10 hover:shadow-xl"
+                                }`}
+                        >
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${isRetained ? "bg-white text-indigo-600 rotate-12" : "bg-white dark:bg-white/10 text-slate-400 dark:text-slate-500"
+                                }`}>
+                                <CheckCircle size={24} strokeWidth={3} />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className={`text-lg font-black uppercase tracking-wide transition-colors ${isRetained ? "text-white" : "text-theme-primary"}`}>
+                                    {isRetained ? "Profil Retenu !" : "Retenir ce profil"}
+                                </h3>
+                                <p className={`text-xs font-medium transition-colors ${isRetained ? "text-indigo-100" : "text-slate-500 dark:text-slate-400"}`}>
+                                    {isRetained ? "Ce candidat sera marqué comme favori." : "Cliquer pour marquer comme favori."}
+                                </p>
+                            </div>
+                            {isRetained && (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2"
+                                >
+                                    <CheckCircle size={28} className="text-indigo-400/50 rotate-12" />
+                                </motion.div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className={`p-4 rounded-2xl border transition-all ${interview.status === 'CHECKED_IN' ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-white/5 border-white/10'}`}>
+                    <div className={`p-4 rounded-2xl border transition-all ${interview.status === 'CHECKED_IN' ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10'}`}>
                         <div className="flex gap-3 mb-2">
                             {interview.photoUrl ? (
                                 <img src={interview.photoUrl} alt="Candidat" className="w-8 h-8 rounded-full object-cover border border-white/10 shadow-sm" />

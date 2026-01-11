@@ -11,6 +11,17 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <title>InternFlow - Stages & Alternances</title>
   <script src="https://www.google.com/recaptcha/enterprise.js?render=explicit" async defer></script>
+  <script>
+    (function () {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
 </head>
 
 <body>

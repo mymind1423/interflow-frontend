@@ -3,6 +3,7 @@ import { Bell, Briefcase, User, Info, CheckCircle, AlertTriangle, Clock, Rocket,
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../../context/NotificationContext";
+import { useAuth } from "../../authContext";
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -23,6 +24,7 @@ export default function NotificationDropdown() {
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef(null);
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { notifications, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
     // Close on click outside
@@ -103,7 +105,7 @@ export default function NotificationDropdown() {
         } else if (type === 'interview') {
             navigate('/interviews');
         } else if (type === 'view') {
-            navigate('/profile');
+            navigate(user?.userType === 'company' ? '/company-profile' : '/profile');
         } else if (type === 'company_signup') {
             navigate('/admin/companies');
         } else if (type === 'student_signup') {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { studentApi } from "../../api/studentApi";
-import { Calendar, MapPin, MessageSquare, Loader2, CheckCircle, Video, Clock } from "lucide-react";
+import { Calendar, MapPin, MessageSquare, Loader2, CheckCircle, Video, Clock, Trophy, PartyPopper, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import EmptyState from "../../components/common/EmptyState";
@@ -10,7 +10,7 @@ export default function StudentInterviews() {
     const [interviews, setInterviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [filterStatus, setFilterStatus] = useState("ALL");
+    const [activeTab, setActiveTab] = useState("ALL"); // 'ALL' | 'SCHEDULED' | 'COMPLETED' | 'RETAINED'
     const [feedbackLoading, setFeedbackLoading] = useState(false);
     const [checkInLoading, setCheckInLoading] = useState(null);
 
@@ -19,9 +19,12 @@ export default function StudentInterviews() {
             int.companyName.toLowerCase().includes(searchTerm.toLowerCase());
 
         const status = int.status ? int.status.toUpperCase() : "";
-        const matchesStatus = filterStatus === "ALL" ||
-            (filterStatus === "SCHEDULED" && status === "SCHEDULED") ||
-            (filterStatus === "COMPLETED" && status === "COMPLETED");
+
+        let matchesStatus = true;
+        if (activeTab === 'SCHEDULED') matchesStatus = (status === 'SCHEDULED' || status === 'ACCEPTED');
+        else if (activeTab === 'COMPLETED') matchesStatus = status === 'COMPLETED';
+        else if (activeTab === 'RETAINED') matchesStatus = int.isRetained;
+
         return matchesSearch && matchesStatus;
     });
 
@@ -119,41 +122,112 @@ export default function StudentInterviews() {
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 relative pb-24">
+        <div className="max-w-screen-2xl mx-auto px-4 py-6 sm:py-8 relative pb-24">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-theme-primary mb-2 flex items-center gap-3">
                 <Calendar className="text-blue-600 dark:text-blue-400" /> Mes Entretiens
             </h1>
             <p className="text-theme-secondary mb-6 sm:mb-8 text-sm sm:text-base">Consultez vos entretiens et confirmez votre présence.</p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-8 glass-panel p-2 rounded-2xl shadow-md border border-white/60">
-                <input
-                    type="text"
-                    placeholder="Rechercher un entretien..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-theme-primary placeholder-theme-secondary focus:outline-none focus:border-blue-500 transition-colors"
-                />
-                <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-theme-primary focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
-                >
-                    <option value="ALL">Tous les statuts</option>
-                    <option value="SCHEDULED">Programmés</option>
-                    <option value="COMPLETED">Terminés</option>
-                </select>
-            </div>
+            {/* Counts Calculation */}
+            {(() => {
+                const counts = {
+                    ALL: interviews.length,
+                    SCHEDULED: interviews.filter(i => i.status === 'SCHEDULED' || i.status === 'ACCEPTED').length,
+                    COMPLETED: interviews.filter(i => i.status === 'COMPLETED').length,
+                    RETAINED: interviews.filter(i => i.isRetained).length
+                };
+
+                return (
+                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-panel p-2 rounded-2xl shadow-sm mb-8">
+                        {/* Left: Categories with Badges */}
+                        <div className="flex gap-1 bg-slate-50 dark:bg-white/5 p-1.5 rounded-xl w-full md:w-auto overflow-x-auto border border-slate-200 dark:border-white/10 no-scrollbar">
+                            <TabButton active={activeTab === 'ALL'} onClick={() => setActiveTab('ALL')} label="Tous" count={counts.ALL} />
+                            <TabButton active={activeTab === 'SCHEDULED'} onClick={() => setActiveTab('SCHEDULED')} label="À venir" count={counts.SCHEDULED} />
+                            <TabButton active={activeTab === 'COMPLETED'} onClick={() => setActiveTab('COMPLETED')} label="Terminés" count={counts.COMPLETED} />
+                            <TabButton
+                                active={activeTab === 'RETAINED'}
+                                onClick={() => setActiveTab('RETAINED')}
+                                label="Mes Réussites"
+                                count={counts.RETAINED}
+                                icon={Trophy}
+                                className={activeTab === 'RETAINED' ? "bg-gradient-to-r from-amber-200 to-yellow-400 text-yellow-900 shadow-lg shadow-yellow-500/20" : "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10"}
+                            />
+                        </div>
+
+                        {/* Right: Search Bar */}
+                        <div className="relative w-full md:w-80 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-secondary group-focus-within:text-blue-500 transition-colors" size={20} />
+                            <input
+                                type="text"
+                                placeholder="Rechercher..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 group-focus-within:border-blue-500/50 rounded-xl py-3 pl-12 pr-4 text-theme-primary placeholder:text-theme-secondary focus:outline-none transition-all font-medium focus:bg-white dark:focus:bg-slate-800"
+                            />
+                        </div>
+                    </div>
+                );
+            })()}
 
             {filteredInterviews.length === 0 ? (
                 <EmptyState
-                    icon={Calendar}
-                    title="Aucun entretien trouvé"
-                    description="Essayez de modifier vos filtres de recherche ou attendez de nouvelles invitations."
-                    color="purple"
+                    icon={activeTab === 'RETAINED' ? Trophy : Calendar}
+                    title={activeTab === 'RETAINED' ? "Pas encore de résultats" : "Aucun entretien trouvé"}
+                    description={activeTab === 'RETAINED' ? "Continuez vos efforts, votre talent finira par payer !" : "Essayez de modifier vos filtres de recherche."}
+                    color={activeTab === 'RETAINED' ? "yellow" : "purple"}
                 />
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredInterviews.map(int => {
+                <div className={`grid grid-cols-1 ${activeTab === 'RETAINED' ? 'md:grid-cols-2 lg:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'} gap-6`}>
+                    {filteredInterviews.map((int, idx) => {
+                        // RETAINED CARD DESIGN
+                        if (activeTab === 'RETAINED') {
+                            return (
+                                <motion.div
+                                    key={int.id}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className="relative overflow-hidden glass-panel border border-amber-200 dark:border-amber-500/30 shadow-lg hover:shadow-xl rounded-[2rem] p-8 group transition-all bg-gradient-to-br from-amber-50/50 via-white/50 to-orange-50/50 dark:from-amber-500/5 dark:via-slate-900 dark:to-orange-500/5"
+                                >
+                                    {/* Decoration */}
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-bl-full -mr-8 -mt-8 z-0"></div>
+                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-400/10 rounded-tr-full -ml-8 -mb-8 z-0"></div>
+
+                                    <div className="relative z-10 flex flex-col items-center text-center">
+                                        <div className="w-24 h-24 rounded-3xl bg-white dark:bg-slate-800 p-2 shadow-xl mb-6 border border-amber-100 dark:border-amber-500/20 flex items-center justify-center relative">
+                                            <div className="absolute -top-3 -right-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white p-2 rounded-full shadow-lg rotate-12">
+                                                <Trophy size={20} fill="currentColor" />
+                                            </div>
+                                            {int.companyLogo ? (
+                                                <img src={int.companyLogo} alt={int.companyName} className="w-full h-full object-contain" />
+                                            ) : (
+                                                <span className="text-2xl font-black text-amber-900 dark:text-amber-100">{int.companyName?.substring(0, 2).toUpperCase()}</span>
+                                            )}
+                                        </div>
+
+                                        <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">{int.companyName}</h3>
+                                        <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 rounded-full font-bold text-xs uppercase tracking-wider mb-6">
+                                            {int.title}
+                                        </div>
+
+                                        <div className="bg-white/60 dark:bg-slate-800/60 p-6 rounded-2xl border border-amber-100 dark:border-amber-500/10 w-full mb-6 backdrop-blur-sm">
+                                            <div className="flex items-center justify-center gap-2 mb-3 text-amber-500">
+                                                <PartyPopper size={24} />
+                                            </div>
+                                            <p className="text-slate-600 dark:text-slate-300 font-medium italic">
+                                                "Félicitations ! Votre profil a retenu toute notre attention. Vous faites partie des candidats sélectionnés pour la suite du processus."
+                                            </p>
+                                        </div>
+
+                                        <button className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/25 transition-all active:scale-95 flex items-center gap-2">
+                                            <MessageSquare size={18} /> Contacter l'entreprise
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            );
+                        }
+
+                        // STANDARD CARD DESIGN
                         const status = int.status ? int.status.toUpperCase() : "";
                         const dateObj = new Date(int.date);
                         const isToday = new Date().toDateString() === dateObj.toDateString();
@@ -164,15 +238,34 @@ export default function StudentInterviews() {
                                 <div className="relative z-10 flex flex-col h-full">
                                     {/* Header */}
                                     <div className="flex justify-between items-start mb-6">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${status === 'SCHEDULED'
-                                            ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20 shadow-sm"
-                                            : status === 'COMPLETED'
-                                                ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-500/20"
-                                                : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/10"
-                                            }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${status === 'SCHEDULED' ? "bg-emerald-500 animate-pulse" : status === 'COMPLETED' ? "bg-blue-500" : "bg-slate-400"}`} />
-                                            {status === 'SCHEDULED' ? (isToday ? "Aujourd'hui" : "Programmé") : status === 'COMPLETED' ? 'Terminé' : status}
-                                        </span>
+                                        <div className="flex flex-col gap-2">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border shadow-sm w-fit ${status === 'ACCEPTED'
+                                                ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30 text-sm font-black uppercase tracking-widest"
+                                                : status === 'SCHEDULED'
+                                                    ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20 text-xs font-bold uppercase tracking-wider"
+                                                    : status === 'COMPLETED'
+                                                        ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-500/20 text-xs font-bold uppercase tracking-wider"
+                                                        : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/10 text-xs font-bold uppercase tracking-wider"
+                                                }`}>
+                                                <span className={`rounded-full ${status === 'ACCEPTED' ? "w-2.5 h-2.5 bg-emerald-600 animate-pulse" : status === 'SCHEDULED' ? "w-2 h-2 bg-emerald-500 animate-pulse" : status === 'COMPLETED' ? "w-2 h-2 bg-blue-500" : "w-2 h-2 bg-slate-400"}`} />
+                                                {status === 'ACCEPTED' ? "Accepté" : status === 'SCHEDULED' ? (isToday ? "Aujourd'hui" : "Programmé") : status === 'COMPLETED' ? 'Terminé' : status}
+                                            </span>
+
+                                            {int.isRetained && (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border shadow-sm bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20 w-fit">
+                                                    🎉 Retenu
+                                                </span>
+                                            )}
+                                            {int.source === 'INVITATION' ? (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border shadow-sm bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/20 w-fit">
+                                                    ✨ Invitation
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border shadow-sm bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 w-fit">
+                                                    📝 Candidature
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="text-right">
                                             <p className="text-gray-500 font-bold font-mono text-base sm:text-lg leading-none">{formatTime(int.date)}</p>
                                             <p className="text-gray-700 text-xs font-bold uppercase tracking-wide mt-1">{formatDate(int.date)}</p>
@@ -271,5 +364,41 @@ export default function StudentInterviews() {
                 </div>
             )}
         </div>
+    );
+}
+
+function TabButton({ active, onClick, label, count, icon: Icon, className }) {
+    // Custom className button (Retained)
+    if (className) {
+        return (
+            <button
+                onClick={onClick}
+                className={`py-2 px-4 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 ${className}`}
+            >
+                {Icon && <Icon size={16} />}
+                {label}
+                {count > 0 && (
+                    <span className="bg-white/20 px-1.5 py-0.5 rounded-md text-[10px] ml-1">
+                        {count}
+                    </span>
+                )}
+            </button>
+        )
+    }
+
+    // Standard buttons
+    return (
+        <button
+            onClick={onClick}
+            className={`py-2 px-4 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 ${active
+                ? "bg-white dark:bg-white/10 text-theme-primary shadow-sm"
+                : "text-theme-secondary hover:text-theme-primary hover:bg-white/50 dark:hover:bg-white/5"
+                }`}
+        >
+            {label}
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${active ? 'bg-slate-100 dark:bg-white/20' : 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400'}`}>
+                {count || 0}
+            </span>
+        </button>
     );
 }

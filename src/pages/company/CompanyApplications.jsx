@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { companyApi } from "../../api/companyApi";
+import { settingsApi } from "../../api/settingsApi";
 import { exportToExcel } from "../../utils/excelExporter";
 import { CheckCircle, XCircle, Search, FileText, Star, LayoutGrid, List, Download, Loader2, Calendar } from "lucide-react";
 import EvaluationModal from "../../components/company/EvaluationModal";
@@ -9,19 +10,42 @@ import ConfirmationModal from "../../components/common/ConfirmationModal";
 import toast from "react-hot-toast";
 import { calculateAge } from "../../utils/dateUtils";
 
+import { useNotifications } from "../../context/NotificationContext";
+
 export default function CompanyApplications() {
+    const { notifications, markAsRead } = useNotifications();
     const [applications, setApplications] = useState([]);
     const [filter, setFilter] = useState("ALL");
+    const [activeSourceTab, setActiveSourceTab] = useState("DIRECT"); // "DIRECT" | "INVITATION"
+
     const [searchTerm, setSearchTerm] = useState("");
     const [viewMode, setViewMode] = useState("card");
     const [loading, setLoading] = useState(true);
     const [processingAction, setProcessingAction] = useState({ id: null, type: null });
     const [viewingApp, setViewingApp] = useState(null);
     const [evaluatingStudent, setEvaluatingStudent] = useState(null);
+    const [validationEnabled, setValidationEnabled] = useState(true);
+
+    useEffect(() => {
+        const unreadAppNotifs = notifications.filter(n => !n.isRead && n.type === 'application');
+        if (unreadAppNotifs.length > 0) {
+            unreadAppNotifs.forEach(n => markAsRead(n.id));
+        }
+    }, [notifications]);
 
     useEffect(() => {
         loadApplications();
+        loadSettings();
     }, []);
+
+    const loadSettings = async () => {
+        try {
+            const settings = await settingsApi.getSettings();
+            setValidationEnabled(settings.workflow?.validationEnabled !== false);
+        } catch (error) {
+            console.error("Error loading settings:", error);
+        }
+    };
 
     const loadApplications = async () => {
         try {
@@ -73,10 +97,11 @@ export default function CompanyApplications() {
     };
 
     const filteredApps = applications.filter(app => {
+        const matchesSource = app.source === activeSourceTab;
         const matchesFilter = filter === "ALL" ? true : app.status === filter;
         const matchesSearch = app.applicantName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             app.jobTitle?.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesFilter && matchesSearch;
+        return matchesSource && matchesFilter && matchesSearch;
     });
 
     const handleExport = () => {
@@ -109,8 +134,36 @@ export default function CompanyApplications() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary mb-6">Gestion des Candidatures</h1>
+        <div className="max-w-screen-2xl mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-black text-theme-primary mb-2">Suivi des Candidats</h1>
+                    <p className="text-theme-secondary font-medium">Gérez vos candidatures directes et le suivi de vos invitations.</p>
+                </div>
+
+                <div className="flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 w-fit">
+                    <button
+                        onClick={() => setActiveSourceTab('DIRECT')}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeSourceTab === 'DIRECT'
+                            ? "bg-blue-50 text-blue-600 shadow-sm"
+                            : "text-slate-500 hover:text-blue-500"
+                            }`}
+                    >
+                        <FileText size={16} />
+                        Candidatures
+                    </button>
+                    <button
+                        onClick={() => setActiveSourceTab('INVITATION')}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeSourceTab === 'INVITATION'
+                            ? "bg-purple-50 text-purple-600 shadow-sm"
+                            : "text-slate-500 hover:text-purple-500"
+                            }`}
+                    >
+                        <Star size={16} />
+                        Invitations
+                    </button>
+                </div>
+            </div>
 
             <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex glass-panel !p-1 overflow-x-auto no-scrollbar shadow-sm rounded-xl">
@@ -166,6 +219,7 @@ export default function CompanyApplications() {
                                 <div key={app.id}
                                     onClick={() => setViewingApp(app)}
                                     className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer glass-panel hover:border-blue-300 dark:hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-100 dark:hover:shadow-none hover:-translate-y-0.5
+                                ${app.source === 'INVITATION' ? 'border-purple-100 dark:border-purple-500/20 bg-purple-50/10' : ''}
                                 ${app.status === 'ACCEPTED' ? 'hover:border-emerald-300 dark:hover:border-emerald-500/50' : app.status === 'REJECTED' ? 'hover:border-red-300 dark:hover:border-red-500/50' : 'hover:border-blue-300 dark:hover:border-blue-500/50'}`}
                                 >
                                     {/* Avatar */}
@@ -205,14 +259,21 @@ export default function CompanyApplications() {
                                     {/* Actions */}
                                     <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                                         {app.status === 'PENDING' ? (
-                                            <>
-                                                <button onClick={() => requestAction(app.id, "ACCEPTED")} disabled={processingAction.id === app.id} className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 transition-colors disabled:opacity-50 border border-emerald-100 dark:border-emerald-500/20 hover:border-emerald-500" title="Accepter">
-                                                    {processingAction.id === app.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+                                            validationEnabled ? (
+                                                <>
+                                                    <button onClick={() => requestAction(app.id, "ACCEPTED")} disabled={processingAction.id === app.id} className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 transition-colors disabled:opacity-50 border border-emerald-100 dark:border-emerald-500/20 hover:border-emerald-500" title="Accepter">
+                                                        {processingAction.id === app.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+                                                    </button>
+                                                    <button onClick={() => requestAction(app.id, "REJECTED")} disabled={processingAction.id === app.id} className="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 transition-colors disabled:opacity-50 border border-red-100 dark:border-red-500/20 hover:border-red-500" title="Refuser">
+                                                        {processingAction.id === app.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button onClick={() => requestAction(app.id, "ACCEPTED")} disabled={processingAction.id === app.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all font-bold text-xs" title="Planifier l'entretien">
+                                                    {processingAction.id === app.id ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
+                                                    Planifier l'entretien
                                                 </button>
-                                                <button onClick={() => requestAction(app.id, "REJECTED")} disabled={processingAction.id === app.id} className="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 transition-colors disabled:opacity-50 border border-red-100 dark:border-red-500/20 hover:border-red-500" title="Refuser">
-                                                    {processingAction.id === app.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
-                                                </button>
-                                            </>
+                                            )
                                         ) : (
                                             <div className={`p-2 rounded-full border ${app.status === 'ACCEPTED' ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'text-red-500 bg-red-50 dark:bg-red-500/10 border-red-100 dark:border-red-500/20'}`}>
                                                 {app.status === 'ACCEPTED' ? <CheckCircle size={20} /> : <XCircle size={20} />}
@@ -226,6 +287,7 @@ export default function CompanyApplications() {
                         return (
                             <div key={app.id} onClick={() => setViewingApp(app)}
                                 className={`group relative glass-panel rounded-[2rem] p-5 sm:p-6 cursor-pointer hover:border-blue-300 dark:hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-2 overflow-hidden hover:shadow-2xl hover:shadow-blue-200/50 dark:hover:shadow-blue-900/20
+                                ${app.source === 'INVITATION' ? 'border-purple-200 dark:border-purple-500/30 bg-purple-50/20' : ''}
                                 ${app.status === 'ACCEPTED' ? 'hover:border-emerald-300' :
                                         app.status === 'REJECTED' ? 'hover:border-red-300' :
                                             'hover:border-blue-300'}`}>
@@ -275,14 +337,20 @@ export default function CompanyApplications() {
                                     </div>
                                     <div className="pt-5 border-t border-white/10 flex items-center gap-3">
                                         {app.status === 'PENDING' ? (
-                                            <>
-                                                <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "ACCEPTED"); }} disabled={processingAction.id === app.id} className="flex-1 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-200 dark:border-emerald-500/20 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/btn shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                                                    {processingAction.id === app.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} className="group-hover/btn:scale-110 transition-transform" /> Accepter</>}
+                                            validationEnabled ? (
+                                                <>
+                                                    <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "ACCEPTED"); }} disabled={processingAction.id === app.id} className="flex-1 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-200 dark:border-emerald-500/20 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/btn shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                                        {processingAction.id === app.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} className="group-hover/btn:scale-110 transition-transform" /> Accepter</>}
+                                                    </button>
+                                                    <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "REJECTED"); }} disabled={processingAction.id === app.id} className="flex-1 bg-red-50 dark:bg-red-500/10 hover:bg-red-500 border border-red-200 dark:border-red-500/20 hover:border-red-500 text-red-600 dark:text-red-400 hover:text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/btn-reject disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                                                        {processingAction.id === app.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <><XCircle size={18} className="group-hover/btn-reject:scale-110 transition-transform" /> Refuser</>}
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "ACCEPTED"); }} disabled={processingAction.id === app.id} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
+                                                    {processingAction.id === app.id ? <Loader2 size={18} className="animate-spin" /> : <><Calendar size={18} /> Planifier l'entretien</>}
                                                 </button>
-                                                <button onClick={(e) => { e.stopPropagation(); requestAction(app.id, "REJECTED"); }} disabled={processingAction.id === app.id} className="flex-1 bg-red-50 dark:bg-red-500/10 hover:bg-red-500 border border-red-200 dark:border-red-500/20 hover:border-red-500 text-red-600 dark:text-red-400 hover:text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group/btn-reject disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-                                                    {processingAction.id === app.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <><XCircle size={18} className="group-hover/btn-reject:scale-110 transition-transform" /> Refuser</>}
-                                                </button>
-                                            </>
+                                            )
                                         ) : (
                                             <div className={`w-full py-3 rounded-xl font-black text-sm border flex items-center justify-center gap-3 shadow-none bg-white/5 ${app.status === 'ACCEPTED' ? 'border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400'}`}>
                                                 {app.status === 'ACCEPTED' ? <CheckCircle size={18} strokeWidth={2.5} /> : <XCircle size={18} strokeWidth={2.5} />}
@@ -299,10 +367,10 @@ export default function CompanyApplications() {
 
             {viewingApp && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="glass-panel rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row animate-fade-in-up">
-                        <div className="w-full md:w-1/3 bg-slate-50 border-r border-slate-200 dark:border-white/10 p-6">
+                    <div className="glass-panel border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row animate-fade-in-up">
+                        <div className="w-full md:w-1/3 border-r border-white/10 p-6">
                             <div className="flex flex-col items-center text-center mb-6">
-                                <div className="w-24 h-24 rounded-full bg-white dark:bg-slate-700 overflow-hidden border-4 border-white dark:border-slate-600 mb-4 shadow-sm shrink-0">
+                                <div className="w-24 h-24 rounded-full bg-white/5 overflow-hidden border-4 border-white/10 mb-4 shadow-sm shrink-0">
                                     {viewingApp.applicantPhoto ? (<img src={viewingApp.applicantPhoto} alt="" className="w-full h-full object-cover" />) : (<div className="w-full h-full flex items-center justify-center text-theme-secondary font-bold text-2xl bg-white/10">{viewingApp.applicantName ? viewingApp.applicantName.substring(0, 2) : "??"}</div>)}
                                 </div>
                                 <h2 className="text-xl font-black text-theme-primary">{viewingApp.applicantName}</h2>
@@ -315,17 +383,23 @@ export default function CompanyApplications() {
                                 <div><p className="text-theme-secondary font-bold text-xs uppercase tracking-wider mb-1">Faculté / École</p><p className="text-theme-primary font-medium">{viewingApp.faculty || "N/A"}</p></div>
                                 <div><p className="text-theme-secondary font-bold text-xs uppercase tracking-wider mb-1">Niveau</p><p className="text-theme-primary font-medium">{viewingApp.grade || "N/A"}</p></div>
                             </div>
-                            <hr className="my-6 border-slate-200 dark:border-slate-700" />
+                            <hr className="my-6 border-white/10" />
                             <div className="flex flex-col gap-3">
                                 {viewingApp.status === 'PENDING' ? (
-                                    <>
-                                        <button onClick={() => { requestAction(viewingApp.id, "ACCEPTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20">
-                                            {processingAction.id === viewingApp.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} /> Accepter</>}
+                                    validationEnabled ? (
+                                        <>
+                                            <button onClick={() => { requestAction(viewingApp.id, "ACCEPTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20">
+                                                {processingAction.id === viewingApp.id && processingAction.type === "ACCEPTED" ? <Loader2 size={18} className="animate-spin" /> : <><CheckCircle size={18} /> Accepter</>}
+                                            </button>
+                                            <button onClick={() => { requestAction(viewingApp.id, "REJECTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-red-500 hover:text-red-400 border border-white/10 hover:border-red-500/50 rounded-xl font-bold transition-all flex items-center justify-center gap-2 group/btn-reject-modal disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                                                {processingAction.id === viewingApp.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <><XCircle size={18} className="group-hover/btn-reject-modal:scale-110 transition-transform" /> Refuser</>}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button onClick={() => { requestAction(viewingApp.id, "ACCEPTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
+                                            {processingAction.id === viewingApp.id ? <Loader2 size={18} className="animate-spin" /> : <><Calendar size={18} /> Planifier l'entretien</>}
                                         </button>
-                                        <button onClick={() => { requestAction(viewingApp.id, "REJECTED"); }} disabled={processingAction.id === viewingApp.id} className="w-full py-2.5 bg-white dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-500/20 text-red-500 hover:text-red-600 dark:text-red-400 border border-slate-200 dark:border-slate-600 hover:border-red-200 dark:hover:border-red-500/40 rounded-xl font-bold transition-all flex items-center justify-center gap-2 group/btn-reject-modal disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-                                            {processingAction.id === viewingApp.id && processingAction.type === "REJECTED" ? <Loader2 size={18} className="animate-spin" /> : <><XCircle size={18} className="group-hover/btn-reject-modal:scale-110 transition-transform" /> Refuser</>}
-                                        </button>
-                                    </>
+                                    )
                                 ) : (
                                     <div className={`w-full py-3 rounded-xl font-bold text-base border flex items-center justify-center gap-2 ${viewingApp.status === 'ACCEPTED' ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400'}`}>
                                         {viewingApp.status === 'ACCEPTED' ? <CheckCircle size={20} /> : <XCircle size={20} />}
@@ -337,10 +411,10 @@ export default function CompanyApplications() {
                             <button onClick={() => setViewingApp(null)} className="mt-4 w-full py-2 text-theme-secondary hover:text-theme-primary transition-colors font-medium">Fermer</button>
                         </div>
                         <div className="flex-1 p-6 sm:p-8 bg-transparent">
-                            <div className="mb-6"><h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-slate-600" /> Lettre de motivation</h3><div className="bg-white p-6 rounded-2xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed min-h-[100px] shadow-sm font-medium">{viewingApp.coverLetter || "Le candidat n'a pas ajouté de lettre de motivation."}</div></div>
+                            <div className="mb-6"><h3 className="text-lg font-bold text-theme-primary mb-3 flex items-center gap-2"><FileText size={20} className="text-slate-500" /> Lettre de motivation</h3><div className="bg-white/5 p-6 rounded-2xl border border-white/10 text-theme-secondary whitespace-pre-wrap leading-relaxed min-h-[100px] shadow-sm font-medium">{viewingApp.coverLetter || "Le candidat n'a pas ajouté de lettre de motivation."}</div></div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-blue-900" /> CV</h3>{viewingApp.cvUrl ? (<iframe src={viewingApp.cvUrl} className="w-full h-64 rounded-xl border border-slate-200 dark:border-white/10 bg-white shadow-sm" title="CV Preview" />) : (<div className="h-64 bg-white border border-slate-200 dark:border-white/10 rounded-xl flex items-center justify-center text-slate-400 italic">Non disponible</div>)}{viewingApp.cvUrl && (<a href={viewingApp.cvUrl} target="_blank" rel="noreferrer" className="block mt-2 text-center text-sm text-blue-900 font-bold hover:underline">Ouvrir en plein écran</a>)}</div>
-                                <div><h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><FileText size={20} className="text-slate-700" /> Diplôme</h3>{viewingApp.diplomaUrl ? (<iframe src={viewingApp.diplomaUrl} className="w-full h-64 rounded-xl border border-slate-200 dark:border-white/10 bg-white shadow-sm" title="Diploma Preview" />) : (<div className="h-64 bg-white border border-slate-200 dark:border-white/10 rounded-xl flex items-center justify-center text-slate-400 italic">Non disponible</div>)}{viewingApp.diplomaUrl && (<a href={viewingApp.diplomaUrl} target="_blank" rel="noreferrer" className="block mt-2 text-center text-sm text-blue-900 font-bold hover:underline">Ouvrir en plein écran</a>)}</div>
+                                <div><h3 className="text-lg font-bold text-theme-primary mb-3 flex items-center gap-2"><FileText size={20} className="text-blue-500" /> CV</h3>{viewingApp.cvUrl ? (<iframe src={viewingApp.cvUrl} className="w-full h-64 rounded-xl border border-white/10 bg-white shadow-sm" title="CV Preview" />) : (<div className="h-64 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-theme-secondary italic">Non disponible</div>)}{viewingApp.cvUrl && (<a href={viewingApp.cvUrl} target="_blank" rel="noreferrer" className="block mt-2 text-center text-sm text-blue-500 font-bold hover:underline">Ouvrir en plein écran</a>)}</div>
+                                <div><h3 className="text-lg font-bold text-theme-primary mb-3 flex items-center gap-2"><FileText size={20} className="text-purple-500" /> Diplôme</h3>{viewingApp.diplomaUrl ? (<iframe src={viewingApp.diplomaUrl} className="w-full h-64 rounded-xl border border-white/10 bg-white shadow-sm" title="Diploma Preview" />) : (<div className="h-64 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-theme-secondary italic">Non disponible</div>)}{viewingApp.diplomaUrl && (<a href={viewingApp.diplomaUrl} target="_blank" rel="noreferrer" className="block mt-2 text-center text-sm text-purple-500 font-bold hover:underline">Ouvrir en plein écran</a>)}</div>
                             </div>
                         </div>
                     </div>

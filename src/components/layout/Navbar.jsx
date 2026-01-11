@@ -3,6 +3,8 @@ import { signOut } from "firebase/auth";
 import { useState, useRef, useEffect } from "react";
 import { auth } from "../../firebase";
 import { useAuth } from "../../authContext";
+import { useTheme } from "../../context/ThemeContext";
+import { useProfile } from "../../context/ProfileContext";
 import { useNotifications } from "../../context/NotificationContext";
 import Notifications from "../common/Notifications";
 import NotificationDropdown from "../common/NotificationDropdown";
@@ -18,9 +20,10 @@ function Navbar() {
   /* ... inside Navbar ... */
   const { user } = useAuth();
   const { notifications } = useNotifications();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
-  const [profile, setProfile] = useState(null);
+  // const [profile, setProfile] = useState(null); // REMOVED: Using context
   const [applications, setApplications] = useState([]); // New state for token history
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false); // New state for token dropdown
@@ -30,17 +33,7 @@ function Navbar() {
   const tokenDropdownRef = useRef(null);
 
   // Theme Logic
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     // Click outside handler
@@ -70,16 +63,9 @@ function Navbar() {
   }, []);
 
   useEffect(() => {
-    // Don't fetch profile if we are in the middle of a signup wizard
+    // Fetch apps history for dropdown
     if (user && !location.pathname.includes("/signup")) {
-      apiFetch("/api/profile/get")
-        .then(data => setProfile(data))
-        .catch(err => {
-          // Ignore 403/404 during potential race conditions in signup
-          if (err.status !== 403 && err.status !== 404) {
-            console.error("Navbar profile fetch error", err);
-          }
-        });
+      /* REMOVED: Profile fetching moved to Context */
 
       if (user.userType === 'student') {
         studentApi.getApplications()
@@ -177,7 +163,7 @@ function Navbar() {
       { path: "/company-talents", label: "Vivier", icon: User },
       { path: "/company-planning", label: "Planning", icon: Calendar },
       { path: "/company/live", label: "Live Manager", icon: Video },
-      { path: "/profile", label: "Profil", icon: Building },
+      { path: "/company-profile", label: "Profil", icon: Building },
     ] : [
       { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { path: "/jobs", label: "Offres", icon: Briefcase },
@@ -198,7 +184,7 @@ function Navbar() {
           : "bg-transparent border-transparent"
           }`}
       >
-        <div className="max-w-7xl mx-auto px-4 md:px-8 h-18 md:h-20 flex items-center justify-between gap-4 transition-all duration-300 relative">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-8 h-18 md:h-20 flex items-center justify-between gap-4 transition-all duration-300 relative">
 
           {/* Logo */}
           <Link to="/" className="text-xl font-bold tracking-tight flex items-center gap-3 z-20 group">
@@ -235,13 +221,15 @@ function Navbar() {
                       if (link.label === "Offres") {
                         count = notifications.filter(n => !n.isRead && (n.type === 'job' || n.type === 'offer')).length;
                       } else if (link.label === "Candidatures") {
-                        count = notifications.filter(n => !n.isRead && n.type === 'application').length;
+                        count = notifications.filter(n => !n.isRead && (n.type === 'application' || n.type === 'invitation')).length;
                       } else if (link.label === "Entretiens") {
                         count = notifications.filter(n => !n.isRead && n.type === 'interview').length;
                       } else if (link.label === "Entreprises") {
                         count = notifications.filter(n => !n.isRead && n.type === 'company_signup').length;
                       } else if (link.label === "Étudiants") {
                         count = notifications.filter(n => !n.isRead && n.type === 'student_signup').length;
+                      } else if (link.label === "Planning") {
+                        count = notifications.filter(n => !n.isRead && n.type === 'interview').length;
                       }
 
                       return count > 0 && (
@@ -385,7 +373,7 @@ function Navbar() {
 
                         <div className="py-1">
                           <Link
-                            to="/profile"
+                            to={userType === 'company' ? '/company-profile' : '/profile'}
                             onClick={() => setIsDropdownOpen(false)}
                             className="flex items-center gap-2 px-4 py-2 text-sm text-theme-secondary hover:bg-slate-100 dark:hover:bg-white/10 hover:text-theme-primary transition-colors"
                           >

@@ -28,6 +28,13 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   --accent-gradient: linear-gradient(to right, #3b82f6, #6366f1);
+
+  /* Skeleton Helper Colors */
+  --skeleton-base: #1e293b;
+  /* slate-800 */
+  --skeleton-highlight: #0f172a;
+  /* slate-950 */
+
   color-scheme: dark;
 }
 
@@ -56,6 +63,13 @@
   --glass-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
 
   --accent-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+
+  /* Skeleton Helper Colors */
+  --skeleton-base: #e2e8f0;
+  /* slate-200 */
+  --skeleton-highlight: #f1f5f9;
+  /* slate-100 */
+
   color-scheme: light;
 }
 

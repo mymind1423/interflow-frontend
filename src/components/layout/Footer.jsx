@@ -8,7 +8,7 @@ export default function Footer() {
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
+            <div className="max-w-screen-2xl mx-auto px-4 md:px-8 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     {/* Column 1: Brand */}
                     <div className="space-y-6">

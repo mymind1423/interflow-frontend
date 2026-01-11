@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { studentApi } from "../../api/studentApi";
 import { useAuth } from "../../authContext";
+import { useProfile } from "../../context/ProfileContext";
 import {
   Briefcase,
   Calendar,
@@ -16,6 +17,7 @@ import {
   X,
   Bookmark,
   BookmarkCheck,
+  BookOpen,
   Loader2
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -37,6 +39,7 @@ import QuotaLimitModal from "../../components/modals/QuotaLimitModal";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { decrementTokens } = useProfile();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ applications: 0, interviews: 0, saved: 0, views: 0, invitations: 0 });
   const [nextInterview, setNextInterview] = useState(null);
@@ -96,6 +99,7 @@ export default function Dashboard() {
     try {
       setApplyingId(jobId);
       await studentApi.apply(jobId);
+      decrementTokens(); // Optimistic update
       // Update local state
       setRecentJobs(prev => prev.map(j => j.id === jobId ? { ...j, isApplied: true } : j));
       if (selectedJob?.id === jobId) setSelectedJob(prev => ({ ...prev, isApplied: true }));
@@ -148,7 +152,7 @@ export default function Dashboard() {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
+    <div className="max-w-screen-2xl mx-auto px-4 md:px-8 py-8 space-y-8">
 
       {/* 1. Header & Welcome */}
       <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-gradient-to-r from-blue-600 to-violet-500 p-6 sm:p-8 md:p-12 shadow-2xl shadow-indigo-500/20">
@@ -325,14 +329,22 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <h3 className="text-2xl font-black text-theme-primary mb-2 leading-tight">
-                    {nextInterview.jobTitle || nextInterview.title || "Entretien"}
-                  </h3>
-                  <p className="text-theme-secondary font-medium flex items-center gap-2">
-                    <Building size={14} />
-                    {nextInterview.companyName || nextInterview.company}
-                  </p>
+                <div className="mb-6 flex items-start gap-4">
+                  <div className="w-14 h-14 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center p-1.5 shadow-sm border border-slate-100 dark:border-white/5 shrink-0">
+                    {(nextInterview.companyLogo || nextInterview.logo) ? (
+                      <img src={nextInterview.companyLogo || nextInterview.logo} alt={nextInterview.companyName} className="w-full h-full object-contain" />
+                    ) : (
+                      <Building className="text-slate-400 dark:text-slate-500" size={24} />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <h3 className="text-xl font-black text-theme-primary mb-1 leading-tight line-clamp-2">
+                      {nextInterview.jobTitle || nextInterview.title || "Entretien"}
+                    </h3>
+                    <p className="text-theme-secondary font-medium flex items-center gap-2 text-sm truncate">
+                      {nextInterview.companyName || nextInterview.company}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-3 mb-8 bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
@@ -378,19 +390,19 @@ export default function Dashboard() {
           )}
 
           {/* Quick Tip or Promo */}
-          <div className="glass-panel border-indigo-100 dark:border-indigo-500/20 rounded-3xl p-6 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/10 dark:to-blue-900/10 flex items-center justify-between relative overflow-hidden">
+          <div className="group glass-panel border-indigo-100 dark:border-indigo-500/20 hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-all shadow-sm hover:shadow-md rounded-3xl p-6 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/10 dark:to-blue-900/10 flex items-center justify-between relative overflow-hidden">
             <div className="relative z-10 max-w-[65%]">
-              <h3 className="text-indigo-900 dark:text-indigo-300 font-bold mb-2">Besoin d'un coup de pouce ?</h3>
-              <p className="text-indigo-700 dark:text-indigo-400 text-sm mb-4 leading-relaxed">
+              <h3 className="text-xl font-bold text-theme-primary mb-2">Besoin d'un coup de pouce ?</h3>
+              <p className="text-theme-secondary text-sm mb-4 leading-relaxed font-medium">
                 Retrouvez tous nos conseils pour réussir vos entretiens dans le guide.
               </p>
               <button onClick={openStudentGuide} className="text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:text-indigo-500 dark:hover:text-indigo-300 flex items-center gap-1 transition-colors">
-                Ouvrir le guide <ArrowRight size={14} />
+                Ouvrir le guide <ArrowRight size={16} />
               </button>
             </div>
-            {/* Placeholder for 3D Illustration */}
-            <div className="w-24 h-24 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex items-center justify-center shrink-0">
-              <span className="text-xs text-indigo-400 font-medium">Illustration</span>
+            {/* 3D Illustration Replacement Icon */}
+            <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl shadow-lg shadow-indigo-500/20 flex items-center justify-center shrink-0 rotate-3 group-hover:rotate-6 transition-transform">
+              <BookOpen size={40} className="text-white drop-shadow-md" />
             </div>
           </div>
 

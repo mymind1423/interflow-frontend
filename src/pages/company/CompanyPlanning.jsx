@@ -30,7 +30,7 @@ export default function CompanyPlanning() {
     };
 
     const getCategory = (interview) =>
-        interview.title && interview.title.toLowerCase().includes('invitation') ? 'INVITE' : 'NORMAL';
+        interview.source === 'INVITATION' ? 'INVITE' : 'NORMAL';
 
     const filteredInterviews = interviews.filter(i => {
         if (filter === "ALL") return true;

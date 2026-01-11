@@ -66,6 +66,26 @@ export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApp
                                     </div>
                                 </div>
 
+                                {/* Urgency Badge */}
+                                {(job.interviewQuota && job.applicationCount !== undefined && !isClosed) && (
+                                    <div className="hidden md:flex flex-col items-center justify-center shrink-0 mx-4">
+                                        <div className="w-[100px] h-[75px] rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 [html[data-theme=dark]_&]:from-violet-600 [html[data-theme=dark]_&]:via-fuchsia-600 [html[data-theme=dark]_&]:to-pink-600 text-white flex flex-col items-center justify-center p-2 shadow-xl shadow-red-500/20 [html[data-theme=dark]_&]:shadow-fuchsia-500/20 relative overflow-hidden group/badge transition-all hover:scale-105 border-4 border-white/20 [html[data-theme=dark]_&]:border-white/10">
+                                            {/* Number Top */}
+                                            <div className="text-3xl font-black tracking-tighter z-10 leading-none mb-1">
+                                                {Math.max(0, job.interviewQuota - job.applicationCount).toString().padStart(2, '0')}
+                                            </div>
+                                            {/* Text Bottom */}
+                                            <span className="text-[8px] font-bold text-white/90 uppercase tracking-wide leading-none text-center z-10">
+                                                Places<br />Restantes
+                                            </span>
+
+                                            {/* Decoration */}
+                                            <div className="absolute top-0 right-0 w-12 h-12 bg-white/20 blur-xl rounded-full -translate-y-1/2 translate-x-1/2" />
+                                            <div className="absolute bottom-0 left-0 w-10 h-10 bg-black/10 blur-lg rounded-full translate-y-1/2 -translate-x-1/2" />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <button
                                     onClick={onClose}
                                     className="p-2 bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 text-theme-secondary hover:text-theme-primary rounded-full transition-colors"
@@ -152,7 +172,7 @@ export default function JobDrawer({ job, isOpen, tokensRemaining, onClose, onApp
                                     ) : isLocked ? (
                                         "Quota Atteint (Max 5)"
                                     ) : (
-                                        "Postuler maintenant"
+                                        "Candidater maintenant"
                                     )}
                                 </Button>
                             </div>

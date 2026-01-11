@@ -12,7 +12,7 @@ export default function Home() {
       <div className="relative z-10">
 
         {/* Hero Section */}
-        <section className="pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto text-center">
+        <section className="pt-24 pb-20 px-4 md:px-8 max-w-screen-2xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

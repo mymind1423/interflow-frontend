@@ -4,6 +4,7 @@ export const studentApi = {
     getStats: () => apiFetch("/api/student/stats"),
     getCompanies: () => apiFetch("/api/student/companies"),
     getRecentJobs: () => apiFetch("/api/student/jobs"),
+    getJobById: (id) => apiFetch(`/api/student/jobs/${id}`),
     apply: (jobId) => apiFetch("/api/student/apply", { method: "POST", body: JSON.stringify({ jobId }) }),
     getApplications: () => apiFetch("/api/student/applications"),
     getCompanyJobs: (companyId) => apiFetch(`/api/student/companies/${companyId}/jobs`),

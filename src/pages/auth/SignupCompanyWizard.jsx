@@ -41,14 +41,18 @@ function SignupCompanyWizard() {
     email: "",
     address: "",
     domaine: "",
+    phone: "",
+    website: "",
     description: "",
   });
 
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [logo, setLogo] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
 
   // Computed progress for custom stepper
@@ -59,8 +63,12 @@ function SignupCompanyWizard() {
 
   const handleNextStep1 = async () => {
     setError("");
-    if (!form.name || !form.email || !password) {
+    if (!form.name || !form.email || !password || !confirmPassword) {
       setError("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Les mots de passe ne correspondent pas.");
       return;
     }
     if (!isEmail(form.email)) {
@@ -69,6 +77,7 @@ function SignupCompanyWizard() {
     }
 
     try {
+      setLoadingStep(true);
       const res = await signupApi.verifyEmail(form.email);
       if (res.exists) {
         setError("Cet email est déjà associé à un compte.");
@@ -77,6 +86,8 @@ function SignupCompanyWizard() {
       setStep(2);
     } catch (err) {
       setError("Impossible de vérifier l'email. Veuillez réessayer.");
+    } finally {
+      setLoadingStep(false);
     }
   };
 
@@ -119,6 +130,8 @@ function SignupCompanyWizard() {
         name: form.name,
         address: form.address,
         domaine: form.domaine,
+        phone: form.phone,
+        website: form.website,
         description: form.description,
         logoUrl: logoRes.url // Matches backend expectation (mapped to photoUrl/logoUrl)
       };
@@ -137,22 +150,22 @@ function SignupCompanyWizard() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-slate-950">
+    <main className="min-h-screen flex items-center justify-center p-4 bg-body transition-colors duration-300">
       <div className="w-full max-w-2xl">
 
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-2xl sm:text-3xl font-black text-white mb-2 flex items-center justify-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-black text-theme-primary mb-2 flex items-center justify-center gap-3">
             <Building2 className="text-emerald-500" size={32} />
             Espace Recruteur
           </h1>
-          <p className="text-slate-400">Créez votre profil entreprise en quelques instants.</p>
+          <p className="text-theme-secondary">Créez votre profil entreprise en quelques instants.</p>
         </div>
 
         {/* Custom Stepper */}
         <div className="flex items-center justify-between mb-12 relative max-w-xs mx-auto">
           {/* Track Background */}
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-800 -z-10 -translate-y-1/2 rounded-full" />
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 dark:bg-slate-800 -z-10 -translate-y-1/2 rounded-full" />
           {/* Progress Bar */}
           <div
             className="absolute top-1/2 left-0 h-1 bg-emerald-500 -z-10 -translate-y-1/2 rounded-full transition-all duration-500 ease-out"
@@ -162,7 +175,7 @@ function SignupCompanyWizard() {
           {[1, 2, 3].map((s) => (
             <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${step >= s
               ? "bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-110"
-              : "bg-slate-900 border-slate-700 text-slate-500"
+              : "bg-white/10 border-white/10 text-theme-secondary"
               }`}>
               {step > s ? <Check size={18} /> : s}
             </div>
@@ -172,7 +185,7 @@ function SignupCompanyWizard() {
         {/* Form Card */}
         <motion.div
           layout
-          className="bg-slate-900 border border-slate-800 rounded-[2rem] p-5 sm:p-10 shadow-2xl relative overflow-hidden"
+          className="glass-panel border border-white/10 rounded-[2rem] p-5 sm:p-10 shadow-xl relative overflow-hidden"
         >
           {/* Decoration */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
@@ -189,9 +202,9 @@ function SignupCompanyWizard() {
             {/* STEP 1: Account Info */}
             {step === 1 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-theme-primary flex items-center gap-2">
                   Identification
-                  <span className="text-xs font-normal text-slate-500 ml-auto uppercase tracking-widest">Étape 1/3</span>
+                  <span className="text-xs font-normal text-theme-secondary ml-auto uppercase tracking-widest">Étape 1/3</span>
                 </h2>
 
                 <div className="space-y-4">
@@ -199,9 +212,9 @@ function SignupCompanyWizard() {
                   {/* Company Name */}
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Nom de l'entreprise</label>
+                      <label className="text-xs font-bold text-theme-secondary uppercase tracking-wide ml-1">Nom de l'entreprise</label>
                       <Tooltip content="Le nom légal de votre structure">
-                        <Info size={14} className="text-slate-600 hover:text-slate-400 cursor-help" />
+                        <Info size={14} className="text-theme-secondary hover:text-theme-primary cursor-help" />
                       </Tooltip>
                     </div>
                     <div className="relative">
@@ -212,7 +225,7 @@ function SignupCompanyWizard() {
                         placeholder="Ex: Tech Solutions Inc."
                         value={form.name}
                         onChange={handleChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 sm:py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 sm:py-3.5 pl-12 pr-4 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-400"
                       />
                     </div>
                   </div>
@@ -228,7 +241,7 @@ function SignupCompanyWizard() {
                         placeholder="contact@entreprise.com"
                         value={form.email}
                         onChange={handleChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-400"
                       />
                     </div>
                   </div>
@@ -243,7 +256,7 @@ function SignupCompanyWizard() {
                         placeholder="••••••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 pl-12 pr-12 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-400"
                       />
                       <button
                         type="button"
@@ -255,14 +268,34 @@ function SignupCompanyWizard() {
                     </div>
                   </div>
 
+                  {/* Confirm Password */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Confirmer mot de passe</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••••••"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-400"
+                      />
+                    </div>
+                  </div>
+
                 </div>
 
                 <div className="pt-4">
                   <button
                     onClick={handleNextStep1}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 sm:py-4 font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 group"
+                    disabled={loadingStep}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 sm:py-4 font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Suivant <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    {loadingStep ? (
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>Suivant <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>
+                    )}
                   </button>
                 </div>
               </div>
@@ -272,9 +305,9 @@ function SignupCompanyWizard() {
             {/* STEP 2: Company Details */}
             {step === 2 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-theme-primary flex items-center gap-2">
                   Détails & Activité
-                  <span className="text-xs font-normal text-slate-500 ml-auto uppercase tracking-widest">Étape 2/3</span>
+                  <span className="text-xs font-normal text-theme-secondary ml-auto uppercase tracking-widest">Étape 2/3</span>
                 </h2>
 
                 <div className="space-y-4">
@@ -290,7 +323,38 @@ function SignupCompanyWizard() {
                         placeholder="Adresse complète"
                         value={form.address}
                         onChange={handleChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Téléphone</label>
+                    <div className="relative">
+                      <input
+                        name="phone"
+                        type="tel"
+                        placeholder="Ex: 05 22 12 34 56"
+                        value={form.phone}
+                        onChange={handleChange}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Website */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">Site Web</label>
+                    <div className="relative">
+                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                      <input
+                        name="website"
+                        type="url"
+                        placeholder="https://www.exemple.com"
+                        value={form.website}
+                        onChange={handleChange}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-400"
                       />
                     </div>
                   </div>
@@ -304,10 +368,10 @@ function SignupCompanyWizard() {
                         name="domaine"
                         value={form.domaine}
                         onChange={handleChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all appearance-none cursor-pointer"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all appearance-none cursor-pointer"
                       >
-                        <option value="" className="text-slate-500">Sélectionner un secteur...</option>
-                        {domaines.map(d => <option key={d} value={d} className="bg-slate-900">{d}</option>)}
+                        <option value="" className="bg-slate-900">Sélectionner un secteur...</option>
+                        {domaines.map(d => <option key={d} value={d} className="bg-idk text-black dark:text-white dark:bg-slate-900">{d}</option>)}
                       </select>
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">▼</div>
                     </div>
@@ -327,7 +391,7 @@ function SignupCompanyWizard() {
                       placeholder="Présentez votre entreprise..."
                       value={form.description}
                       onChange={handleChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-slate-600 resize-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-theme-primary focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-400 resize-none"
                     />
                   </div>
 
@@ -336,7 +400,7 @@ function SignupCompanyWizard() {
                 <div className="flex gap-4 pt-4">
                   <button
                     onClick={() => setStep(1)}
-                    className="px-6 py-3.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-bold flex items-center gap-2"
+                    className="px-6 py-3.5 rounded-xl border border-white/10 text-theme-secondary hover:text-theme-primary hover:bg-white/5 transition-colors font-bold flex items-center gap-2"
                   >
                     <ArrowLeft size={18} /> Retour
                   </button>
@@ -354,7 +418,7 @@ function SignupCompanyWizard() {
             {/* STEP 3: Logo & Confirmation */}
             {step === 3 && (
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   Image de Marque
                   <span className="text-xs font-normal text-slate-500 ml-auto uppercase tracking-widest">Étape 3/3</span>
                 </h2>
@@ -363,9 +427,9 @@ function SignupCompanyWizard() {
 
                 {/* Logo Upload */}
                 <div className="relative group">
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wide mb-2 ml-1">Logo de l'entreprise</label>
+                  <label className="block text-xs font-bold text-theme-secondary uppercase tracking-wide mb-2 ml-1">Logo de l'entreprise</label>
                   <div
-                    className={`border-2 border-dashed rounded-[1.5rem] p-8 flex flex-col items-center justify-center transition-all cursor-pointer h-48 bg-slate-950/30 ${logo ? "border-emerald-500/50 bg-emerald-500/5" : "border-slate-700 hover:border-emerald-500/50 hover:bg-slate-900"}`}
+                    className={`border-2 border-dashed rounded-[1.5rem] p-8 flex flex-col items-center justify-center transition-all cursor-pointer h-48 ${logo ? "border-emerald-500/50 bg-emerald-500/5" : "bg-white/5 border-white/10 hover:border-emerald-500/50 hover:bg-white/10"}`}
                   >
                     <input
                       type="file"
@@ -384,8 +448,8 @@ function SignupCompanyWizard() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center text-slate-500 group-hover:text-slate-300 transition-colors">
-                        <div className="p-4 bg-slate-900 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300">
+                      <div className="flex flex-col items-center text-theme-secondary group-hover:text-theme-primary transition-colors">
+                        <div className="p-4 bg-white/5 border border-white/10 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300">
                           <Upload size={24} />
                         </div>
                         <span className="font-bold">Cliquez pour importer</span>
@@ -400,7 +464,7 @@ function SignupCompanyWizard() {
                 <div className="flex gap-4 pt-6">
                   <button
                     onClick={() => setStep(2)}
-                    className="px-6 py-3.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-bold flex items-center gap-2"
+                    className="px-6 py-3.5 rounded-xl border border-white/10 text-theme-secondary hover:text-theme-primary hover:bg-white/5 transition-colors font-bold flex items-center gap-2"
                   >
                     <ArrowLeft size={18} /> Retour
                   </button>

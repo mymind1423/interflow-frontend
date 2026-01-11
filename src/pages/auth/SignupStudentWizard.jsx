@@ -93,6 +93,8 @@ function SignupStudentWizard() {
   const [loading, setLoading] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
 
+  const [loadingStep, setLoadingStep] = useState(false);
+
   const toast = useToast();
 
   const { user, reloadUser } = useAuth(); // Destructuring user from useAuth() was missing before line 166
@@ -172,6 +174,7 @@ function SignupStudentWizard() {
     }
 
     try {
+      setLoadingStep(true);
       // Small mock check to avoid blocking if API is strictly checking
       // In real prod, keep this check
       const emailCheck = await signupApi.verifyEmail(form.email);
@@ -182,6 +185,8 @@ function SignupStudentWizard() {
       setStep(2);
     } catch (err) {
       setError("Impossible de vérifier l'email.");
+    } finally {
+      setLoadingStep(false);
     }
   };
 
@@ -197,6 +202,7 @@ function SignupStudentWizard() {
     }
 
     try {
+      setLoadingStep(true);
       const phoneCheck = await signupApi.verifyPhone(form.phone);
       if (phoneCheck.exists) {
         setError("Ce numéro est déjà lié à un compte.");
@@ -207,6 +213,8 @@ function SignupStudentWizard() {
       // En cas d'erreur API, on laisse passer pour pas bloquer
       console.warn("Phone check skipped due to error", err);
       setStep(3);
+    } finally {
+      setLoadingStep(false);
     }
   };
 
@@ -429,9 +437,14 @@ function SignupStudentWizard() {
                 <div className="pt-4">
                   <button
                     onClick={handleNextStep1}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 sm:py-3.5 font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    disabled={loadingStep}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 sm:py-3.5 font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Suivant <ArrowRight size={18} />
+                    {loadingStep ? (
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>Suivant <ArrowRight size={18} /></>
+                    )}
                   </button>
                 </div>
 
@@ -550,9 +563,14 @@ function SignupStudentWizard() {
                   </button>
                   <button
                     onClick={handleNextStep2}
-                    className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3.5 font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    disabled={loadingStep}
+                    className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3.5 font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Continuer <ArrowRight size={18} />
+                    {loadingStep ? (
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>Continuer <ArrowRight size={18} /></>
+                    )}
                   </button>
                 </div>
               </div>

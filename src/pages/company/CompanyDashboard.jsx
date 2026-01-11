@@ -174,7 +174,7 @@ export default function CompanyDashboard() {
     const activeJob = jobs.length > 0 ? jobs[0] : null;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+        <div className="max-w-screen-2xl mx-auto px-4 py-6 sm:py-8">
 
             {/* SINGLE JOB HERO DASHBOARD */}
             <div className="relative overflow-hidden rounded-[2.5rem] glass-panel border border-blue-100/50 dark:border-blue-500/20 p-8 sm:p-10 mb-10 z-0 shadow-2xl shadow-blue-900/5">
@@ -391,7 +391,7 @@ export default function CompanyDashboard() {
                     <div className="grid gap-4">
                         {loading ? (
                             Array(3).fill(0).map((_, i) => (
-                                <div key={i} className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 rounded-3xl h-32 flex items-center gap-4">
+                                <div key={i} className="glass-panel p-6 rounded-3xl h-32 flex items-center gap-4">
                                     <Skeleton className="w-16 h-16 rounded-2xl" />
                                     <div className="flex-1">
                                         <Skeleton className="w-1/3 h-6 mb-2" />

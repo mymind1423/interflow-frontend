@@ -1,12 +1,14 @@
-import { ChevronRight, UserCheck } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../authContext";
 
 export default function ProfileCompletion({ profile }) {
+    const { user } = useAuth();
     // Mock calculation - In real app, check profile fields
     // Fields to check: fullname, bio, cvUrl, skills, experience
     let score = 0;
     let nextStep = "Compléter votre profil";
-    let link = "/profile";
+    let link = user?.userType === 'company' ? "/company-profile" : "/profile";
 
     if (profile) {
         if (profile.fullname) score += 20;

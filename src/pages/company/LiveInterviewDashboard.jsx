@@ -4,17 +4,19 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { exportToExcel } from "../../utils/excelExporter";
 import { useNavigate } from "react-router-dom";
-import { Video, Calendar, Clock, User, FileText, CheckCircle, Download, MonitorPlay, Loader2 } from "lucide-react";
+import { Video, Calendar, Clock, User, FileText, CheckCircle, Download, MonitorPlay, Loader2, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import StudentDetailModal from "../../components/company/StudentDetailModal";
 
 export default function LiveInterviewDashboard() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState("queue"); // 'queue' | 'history'
+    const [activeTab, setActiveTab] = useState("queue"); // 'queue' | 'history' | 'retained'
     const [interviews, setInterviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingInterview, setEditingInterview] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState(null);
 
     useEffect(() => {
         loadInterviews();
@@ -43,6 +45,11 @@ export default function LiveInterviewDashboard() {
             .sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
     }, [interviews]);
 
+    const retainedList = useMemo(() => {
+        return interviews.filter(i => i.isRetained)
+            .sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+    }, [interviews]);
+
     const handleStartInterview = (id) => {
         navigate(`/company/live/${id}`);
     };
@@ -54,6 +61,7 @@ export default function LiveInterviewDashboard() {
             { header: "Date", key: "date", width: 15 },
             { header: "Note", key: "score", width: 10 },
             { header: "Remarques", key: "remarks", width: 50 },
+            { header: "Retenu", key: "isRetained", width: 10 },
         ];
 
         const data = historyList.map(i => ({
@@ -61,7 +69,8 @@ export default function LiveInterviewDashboard() {
             jobTitle: i.title || i.jobTitle,
             date: format(new Date(i.dateTime), "dd/MM/yyyy"),
             score: i.score ? `${i.score}/10` : 'N/A',
-            remarks: i.remarks || "Aucune remarque"
+            remarks: i.remarks || "Aucune remarque",
+            isRetained: i.isRetained ? "OUI" : "NON"
         }));
 
         toast.promise(
@@ -100,8 +109,21 @@ export default function LiveInterviewDashboard() {
         }
     };
 
+    const openStudentDetails = (interview) => {
+        setSelectedStudent({
+            ...interview, // Has studentId, studentName, etc.
+            name: interview.studentName,
+            photo: interview.studentPhoto,
+            domain: interview.studentDomaine,
+            grade: interview.studentGrade,
+            faculty: interview.studentFaculty,
+            dateOfBirth: interview.studentDateOfBirth
+            // email, cvUrl, diplomaUrl should be present from backend now
+        });
+    };
+
     return (
-        <div className="p-8 max-w-7xl mx-auto min-h-screen">
+        <div className="p-8 max-w-screen-2xl mx-auto min-h-screen">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div>
@@ -112,7 +134,7 @@ export default function LiveInterviewDashboard() {
                     <p className="text-theme-secondary mt-2 font-medium text-lg">Gérez vos entretiens en temps réel</p>
                 </div>
 
-                {activeTab === 'history' && (
+                {(activeTab === 'history' || activeTab === 'retained') && (
                     <button
                         onClick={handleExportHistory}
                         className="flex items-center gap-2 px-6 py-3 glass-panel border border-white/10 text-theme-primary rounded-2xl font-bold hover:bg-white/10 transition-all shadow-sm active:scale-95"
@@ -123,7 +145,7 @@ export default function LiveInterviewDashboard() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 mb-8 glass-panel p-1.5 rounded-2xl border border-white/10 w-fit shadow-sm">
+            <div className="flex gap-4 mb-8 glass-panel p-1.5 rounded-2xl border border-white/10 w-fit shadow-sm overflow-x-auto">
                 <TabButton
                     active={activeTab === 'queue'}
                     onClick={() => setActiveTab('queue')}
@@ -137,6 +159,13 @@ export default function LiveInterviewDashboard() {
                     label="Historique"
                     icon={FileText}
                     count={historyList.length}
+                />
+                <TabButton
+                    active={activeTab === 'retained'}
+                    onClick={() => setActiveTab('retained')}
+                    label="Retenus"
+                    icon={Star}
+                    count={retainedList.length}
                 />
             </div>
 
@@ -157,12 +186,13 @@ export default function LiveInterviewDashboard() {
                                         key={interview.id}
                                         interview={interview}
                                         onStart={() => handleStartInterview(interview.id)}
+                                        onClick={() => openStudentDetails(interview)}
                                         idx={idx}
                                     />
                                 ))}
                             </div>
                         )
-                    ) : (
+                    ) : activeTab === 'history' ? (
                         historyList.length === 0 ? (
                             <EmptyState message="Aucun historique disponible." icon={FileText} />
                         ) : (
@@ -172,6 +202,23 @@ export default function LiveInterviewDashboard() {
                                         key={interview.id}
                                         interview={interview}
                                         onModify={() => setEditingInterview(interview)}
+                                        onClick={() => openStudentDetails(interview)}
+                                        idx={idx}
+                                    />
+                                ))}
+                            </div>
+                        )
+                    ) : (
+                        retainedList.length === 0 ? (
+                            <EmptyState message="Aucun profil retenu pour le moment." icon={Star} />
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4">
+                                {retainedList.map((interview, idx) => (
+                                    <HistoryItem
+                                        key={interview.id}
+                                        interview={interview}
+                                        onModify={() => setEditingInterview(interview)}
+                                        onClick={() => openStudentDetails(interview)}
                                         idx={idx}
                                     />
                                 ))}
@@ -192,6 +239,12 @@ export default function LiveInterviewDashboard() {
                     />
                 )}
             </AnimatePresence>
+
+            {/* Student Details Modal */}
+            <StudentDetailModal
+                student={selectedStudent}
+                onClose={() => setSelectedStudent(null)}
+            />
         </div>
     );
 }
@@ -285,7 +338,7 @@ function TabButton({ active, onClick, label, icon: Icon, count }) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black transition-all relative ${active
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black transition-all relative whitespace-nowrap ${active
                 ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
                 : "text-theme-secondary hover:text-theme-primary hover:bg-white/10"
                 }`}
@@ -301,7 +354,7 @@ function TabButton({ active, onClick, label, icon: Icon, count }) {
     );
 }
 
-function QueueItem({ interview, onStart, idx }) {
+function QueueItem({ interview, onStart, onClick, idx }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -309,8 +362,8 @@ function QueueItem({ interview, onStart, idx }) {
             transition={{ delay: idx * 0.1 }}
             className={`group glass-panel border rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-xl hover:-translate-y-1 transition-all border-l-4 shadow-sm ${interview.status === 'CHECKED_IN' ? 'border-l-emerald-500 border-white/5' : 'border-l-blue-500 border-white/10'}`}
         >
-            <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-white/5 rounded-2xl flex flex-col items-center justify-center border border-white/10 shadow-sm shrink-0 relative overflow-hidden">
+            <div className="flex items-center gap-6 cursor-pointer" onClick={onClick}>
+                <div className="w-20 h-20 bg-white/5 rounded-2xl flex flex-col items-center justify-center border border-white/10 shadow-sm shrink-0 relative overflow-hidden group-hover:scale-105 transition-transform">
                     {interview.status === 'CHECKED_IN' && (
                         <div className="absolute top-2 right-2 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white z-10 animate-pulse safe-indicator"></div>
                     )}
@@ -351,21 +404,32 @@ function QueueItem({ interview, onStart, idx }) {
     );
 }
 
-function HistoryItem({ interview, idx, onModify }) {
+function HistoryItem({ interview, idx, onModify, onClick }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="glass-panel border border-white/10 rounded-[2rem] p-6 flex flex-col gap-4 hover:shadow-lg transition-all"
+            className={`glass-panel border rounded-[2rem] p-6 flex flex-col gap-4 hover:shadow-lg transition-all ${interview.isRetained ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10'}`}
         >
             <div className="flex justify-between items-start">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                        <CheckCircle size={24} />
+                <div className="flex items-center gap-4 cursor-pointer" onClick={onClick}>
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 overflow-hidden shrink-0">
+                        {interview.studentPhoto ? (
+                            <img src={interview.studentPhoto} className="w-full h-full object-cover" alt="" />
+                        ) : (
+                            <CheckCircle size={24} />
+                        )}
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-theme-primary">{interview.studentName}</h3>
+                        <h3 className="text-lg font-bold text-theme-primary group-hover:text-blue-500 transition-colors flex items-center gap-2">
+                            {interview.studentName}
+                            {interview.isRetained && (
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest">
+                                    Retenu
+                                </span>
+                            )}
+                        </h3>
                         <p className="text-xs text-theme-secondary font-bold uppercase tracking-wider">{format(new Date(interview.dateTime), "dd MMM yyyy • HH:mm", { locale: fr })}</p>
                     </div>
                 </div>
@@ -377,7 +441,7 @@ function HistoryItem({ interview, idx, onModify }) {
                 </div>
             </div>
 
-            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+            <div className={`bg-white/5 p-4 rounded-xl border ${interview.isRetained ? 'border-emerald-500/20' : 'border-white/10'}`}>
                 <p className="text-xs font-black text-theme-secondary uppercase tracking-widest mb-2">Remarques</p>
                 <p className="text-theme-primary text-sm leading-relaxed">{interview.remarks || "Aucune remarque enregistrée."}</p>
             </div>

@@ -44,7 +44,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-8 mt-4 sm:mt-6 pb-24 relative">
+    <div className="max-w-screen-2xl mx-auto px-4 md:px-8 mt-4 sm:mt-6 pb-24 relative">
       {user?.userType === "student" ? (
         <StudentProfile
           user={user}

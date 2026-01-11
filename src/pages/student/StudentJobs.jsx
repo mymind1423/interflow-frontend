@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import JobDrawer from "../../components/modals/JobDrawer";
 import { useAuth } from "../../authContext";
+import { useProfile } from "../../context/ProfileContext";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useApplicationQuota } from "../../hooks/useApplicationQuota";
@@ -19,13 +20,20 @@ export default function StudentJobs() {
     const [viewMode, setViewMode] = useState("card"); // 'card' or 'list'
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState("ALL");
+    const [filterDomaine, setFilterDomaine] = useState("ALL");
     const [savedJobs, setSavedJobs] = useState([]);
     const [selectedJob, setSelectedJob] = useState(null);
     const [applyingId, setApplyingId] = useState(null);
     const [savingId, setSavingId] = useState(null);
 
+    const DOMAINES = [
+        "Informatique", "Industrie", "Marketing", "Transport", "Commerce",
+        "Agriculture", "Télécoms", "Finance", "Santé", "Énergie", "Autre"
+    ];
+
     // Quota Logic
     const { used, limit, isLocked, loading: quotaLoading } = useApplicationQuota();
+    const { decrementTokens } = useProfile();
     const [showQuotaModal, setShowQuotaModal] = useState(false);
 
     // Derived state for saturation
@@ -61,6 +69,7 @@ export default function StudentJobs() {
         try {
             setApplyingId(jobId);
             await studentApi.apply(jobId);
+            decrementTokens(); // Optimistic update
             toast.success("Candidature envoyée ! 🚀");
             // Update local state to reflect change immediately
             setJobs(prev => prev.map(j => j.id === jobId ? { ...j, isApplied: true } : j));
@@ -115,11 +124,17 @@ export default function StudentJobs() {
         const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             job.companyName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesType = filterType === "ALL" || job.type === filterType;
-        return matchesSearch && matchesType;
+
+        // Robust check for domain property
+        const jobDomaine = job.domaine || job.domain || job.sector || (job.company && job.company.domaine) || "";
+        const matchesDomaine = filterDomaine === "ALL" ||
+            (jobDomaine && jobDomaine.toLowerCase() === filterDomaine.toLowerCase());
+
+        return matchesSearch && matchesType && matchesDomaine;
     });
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
+        <div className="max-w-screen-2xl mx-auto px-4 py-8 pb-24">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-8">
                 <div>
@@ -142,6 +157,20 @@ export default function StudentJobs() {
                             className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-theme-primary focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm placeholder:text-theme-secondary focus:bg-white dark:focus:bg-slate-800"
                         />
                     </div>
+
+                    {/* Domain Filter */}
+                    <select
+                        value={filterDomaine}
+                        onChange={(e) => setFilterDomaine(e.target.value)}
+                        className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-theme-primary text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-slate-800 cursor-pointer"
+                    >
+                        <option value="ALL">Tous domaines</option>
+                        {DOMAINES.map(d => (
+                            <option key={d} value={d}>{d}</option>
+                        ))}
+                    </select>
+
+                    {/* Type Filter */}
                     <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
@@ -198,6 +227,7 @@ export default function StudentJobs() {
                                 onClick={() => setSelectedJob(job)}
                                 isLocked={isLocked}
                                 saturatedLimit={SATURATION_LIMIT}
+                                isApplying={applyingId === job.id}
                             />
                         ))}
                     </AnimatePresence>

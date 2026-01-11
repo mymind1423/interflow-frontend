@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { studentApi } from "../../api/studentApi";
 import { invitationApi } from "../../api/invitationApi";
 import { useAuth } from "../../authContext";
-import { Building, Search, Calendar, Filter, Briefcase, CheckCircle, XCircle, Clock, Trash2, Video, Loader2 } from "lucide-react";
+import { useProfile } from "../../context/ProfileContext";
+import { Building, Search, Calendar, Filter, Briefcase, CheckCircle, XCircle, Clock, Trash2, Video, Loader2, Mail, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNotifications } from "../../context/NotificationContext";
 import toast from "react-hot-toast";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
 import Skeleton from "../../components/common/Skeleton";
@@ -11,7 +14,10 @@ import EmptyState from "../../components/common/EmptyState";
 
 export default function Applications() {
     const { user } = useAuth();
-    const [activeTab, setActiveTab] = useState("APPLICATIONS"); // "APPLICATIONS" | "INVITATIONS"
+    const { incrementTokens } = useProfile();
+    const { notifications, markAsRead } = useNotifications();
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState(location.state?.tab || "APPLICATIONS"); // "APPLICATIONS" | "INVITATIONS"
 
     // --- APPLICATIONS STATE ---
     const [applications, setApplications] = useState([]);
@@ -72,7 +78,6 @@ export default function Applications() {
     const getStatusColor = (status) => {
         switch (status) {
             case "ACCEPTED": return "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20";
-            case "INVITED": return "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20";
             case "REJECTED": return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20";
             default: return "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20";
         }
@@ -81,7 +86,6 @@ export default function Applications() {
     const getStatusBaseColor = (status) => {
         switch (status) {
             case "ACCEPTED": return "bg-emerald-500";
-            case "INVITED": return "bg-purple-500";
             case "REJECTED": return "bg-red-500";
             default: return "bg-blue-500";
         }
@@ -98,7 +102,6 @@ export default function Applications() {
     const getStatusLabel = (status) => {
         switch (status) {
             case "ACCEPTED": return "Accepté";
-            case "INVITED": return "Invité par l'entreprise";
             case "REJECTED": return "Refusée";
             default: return "En cours";
         }
@@ -178,6 +181,7 @@ export default function Applications() {
             const res = await studentApi.deleteApplication(id);
             if (res.success) {
                 toast.success("Candidature supprimée");
+                incrementTokens(); // Optimistic update
                 setApplications(prev => prev.filter(a => a.id !== id));
                 setConfirmModal({ isOpen: false });
             } else {
@@ -195,7 +199,7 @@ export default function Applications() {
 
 
     return (
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8 pb-20 relative">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-8 py-8 space-y-8 pb-20 relative">
             {/* Background Ambience */}
             <div className="fixed inset-0 pointer-events-none z-[-1]">
                 <div className="absolute top-[10%] right-[0%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[128px]" />
@@ -231,7 +235,7 @@ export default function Applications() {
                         <Video size={16} />
                         Invitations
                         {pendingInvs.length > 0 && (
-                            <span className="ml-1 px-1.5 py-0.5 bg-blue-600 text-white text-[10px] rounded-full">
+                            <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] rounded-full">
                                 {pendingInvs.length}
                             </span>
                         )}
@@ -368,10 +372,26 @@ export default function Applications() {
                                             </div>
 
                                             <div className="mb-6">
-                                                <h3 className="text-lg font-bold text-theme-primary mb-1 line-clamp-2 leading-snug">{inv.jobTitle}</h3>
-                                                <p className="text-theme-secondary text-sm font-medium flex items-center gap-2">
-                                                    {inv.companyName}
-                                                </p>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="flex-1 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
+                                                        <p className="text-sm text-theme-primary leading-relaxed">
+                                                            <span className="inline-block mr-2">✨</span>
+                                                            {inv.status === 'PENDING' ? (
+                                                                <>L'entreprise <strong className="text-blue-600 dark:text-blue-400">{inv.companyName}</strong> est intéressée par votre profil et vous invite à un entretien pour le poste <strong className="text-theme-primary">{inv.jobTitle}</strong>.</>
+                                                            ) : (
+                                                                <>L'entreprise <strong className="text-blue-600 dark:text-blue-400">{inv.companyName}</strong> était intéressée par votre profil et vous a invité à un entretien pour le poste <strong className="text-theme-primary">{inv.jobTitle}</strong>.</>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                    {inv.status === 'PENDING' && (
+                                                        <div className="flex flex-col items-center gap-1 text-red-600 animate-pulse shrink-0" title="Invitation Prioritaire">
+                                                            <div className="p-2 bg-red-50 dark:bg-red-500/10 rounded-full border border-red-100 dark:border-red-500/20 shadow-sm shadow-red-200 dark:shadow-none">
+                                                                <Mail className="fill-red-100 dark:fill-red-900/20 text-red-600" size={18} />
+                                                            </div>
+                                                            <span className="text-[9px] font-bold uppercase tracking-wider text-red-600">Urgent</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <div className="mt-auto pt-4 flex gap-3">
@@ -450,9 +470,16 @@ function ApplicationCard({ app, index, getStatusBaseColor, getStatusColor, getSt
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
                         <h3 className="text-xl font-bold text-theme-primary group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate pr-4">{app.jobTitle}</h3>
-                        <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm border ${getStatusColor(app.status)}`}>
-                            {getStatusIcon(app.status)}
-                            {app.status === 'PENDING' ? 'Postulé' : getStatusLabel(app.status)}
+                        <div className="flex gap-2">
+                            {app.isRetained && (
+                                <div className="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm border text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20 animate-pulse">
+                                    <span className="text-lg">🎉</span> PROFIL RETENU
+                                </div>
+                            )}
+                            <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm border ${getStatusColor(app.status)}`}>
+                                {getStatusIcon(app.status)}
+                                {app.status === 'PENDING' ? 'Postulé' : getStatusLabel(app.status)}
+                            </div>
                         </div>
                     </div>
 
@@ -465,15 +492,9 @@ function ApplicationCard({ app, index, getStatusBaseColor, getStatusColor, getSt
                             <Calendar size={16} className="text-slate-400" />
                             {new Date(app.createdAt).toLocaleDateString()}
                         </span>
-                        {app.status === 'INVITED' ? (
-                            <span className="text-xs text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-500/20 whitespace-nowrap">
-                                ✨ 0 Jeton (Invitation)
-                            </span>
-                        ) : (
-                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap flex items-center gap-1">
-                                <span className="text-amber-500">🪙</span> 1 Jeton consommé
-                            </span>
-                        )}
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap flex items-center gap-1">
+                            <span className="text-amber-500">🪙</span> 1 Jeton consommé
+                        </span>
                     </div>
                 </div>
 

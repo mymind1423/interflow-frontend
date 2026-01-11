@@ -156,7 +156,7 @@ function CompanyForm({ profile, isEditing, onSave, onCancel }) {
             <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                 <InputField label="Nom de l'entreprise" name="name" value={formData?.name} onChange={handleChange} icon={Building} disabled={!isEditing} />
                 <InputField label="Site Web" name="website" value={formData?.website} onChange={handleChange} icon={Globe} disabled={!isEditing} />
-                <InputField label="Téléphone" name="phone" value={formData?.phone} onChange={handleChange} icon={Phone} disabled={true} />
+                <InputField label="Téléphone" name="phone" value={formData?.phone} onChange={handleChange} icon={Phone} disabled={!isEditing} />
                 <InputField label="Adresse / Ville" name="address" value={formData?.address} onChange={handleChange} icon={MapPin} disabled={!isEditing} />
             </div>
 

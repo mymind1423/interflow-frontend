@@ -37,7 +37,7 @@ export default function PendingApproval() {
   const isApproved = status === "approved";
 
   return (
-    <main className="min-h-screen bg-[#020617] flex items-center justify-center p-4 relative overflow-hidden">
+    <main className="min-h-screen bg-body flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
 
       {/* Background Elements */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
@@ -46,7 +46,7 @@ export default function PendingApproval() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-lg bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden text-center"
+        className="glass-panel w-full max-w-lg border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden text-center"
       >
 
         {/* Status Icon */}
@@ -67,11 +67,12 @@ export default function PendingApproval() {
         </div>
 
         {/* Content */}
-        <h1 className="text-3xl font-black text-white mb-4 tracking-tight">
+        {/* Content */}
+        <h1 className="text-3xl font-black text-theme-primary mb-4 tracking-tight">
           {isApproved ? "Compte Approuvé !" : "Validation en cours"}
         </h1>
 
-        <p className="text-slate-400 text-lg leading-relaxed mb-8">
+        <p className="text-theme-secondary text-lg leading-relaxed mb-8">
           {isApproved
             ? "Excellente nouvelle ! Votre profil entreprise a été validé. Vous pouvez maintenant accéder à votre espace."
             : "Merci de votre inscription. Notre équipe vérifie actuellement vos informations. Vous recevrez un accès dès validation."}
@@ -79,7 +80,7 @@ export default function PendingApproval() {
 
         {/* Status Pill */}
         {!isApproved && (
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-950 border border-slate-800 rounded-full text-slate-500 text-sm font-medium mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-theme-secondary text-sm font-medium mb-8">
             <Loader2 size={14} className="animate-spin" />
             Actualisation automatique...
           </div>
@@ -98,7 +99,7 @@ export default function PendingApproval() {
 
           <button
             onClick={logout}
-            className={`flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold transition-all ${isApproved ? "text-slate-500 hover:bg-slate-900" : "bg-slate-800 hover:bg-slate-700 text-white"}`}
+            className={`flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold transition-all ${isApproved ? "text-theme-secondary hover:bg-white/5" : "bg-white/5 hover:bg-white/10 text-theme-secondary hover:text-theme-primary"}`}
           >
             <LogOut size={18} />
             Se déconnecter
