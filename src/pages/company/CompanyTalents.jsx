@@ -418,37 +418,45 @@ export default function CompanyTalents() {
                                     Aucune offre active disponible. <br /> Veuillez d'abord créer ou réactiver une offre.
                                 </div>
                             ) : (
-                                jobOffers.map(job => (
-                                    <div
-                                        key={job.id}
-                                        onClick={() => setSelectedJobId(job.id)}
-                                        className={`group p-4 rounded-xl border cursor-pointer transition-all flex justify-between items-center relative overflow-hidden font-bold
-                                            ${selectedJobId === job.id
-                                                ? 'bg-blue-600 border-blue-500 shadow-lg shadow-blue-600/30'
-                                                : theme === 'dark'
-                                                    ? 'bg-slate-800/50 border-white/10 hover:border-blue-500/50 hover:bg-slate-800'
-                                                    : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-white'}`}
-                                    >
-                                        <div className="relative z-10">
-                                            <p className={`text-sm ${selectedJobId === job.id ? 'text-white' : theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{job.title}</p>
-                                            <p className={`text-xs mt-1 ${selectedJobId === job.id ? 'text-blue-100' : theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{job.type} • {job.location}</p>
-                                        </div>
-                                        {selectedJobId === job.id && (
-                                            <div className="bg-white text-blue-600 p-1.5 rounded-full shadow-sm relative z-10">
-                                                <Check size={14} strokeWidth={3} />
+                                jobOffers.map(job => {
+                                    const isFull = (job.acceptedCount + (job.pendingInvitationsCount || 0)) >= (job.interviewQuota + 10);
+                                    return (
+                                        <div
+                                            key={job.id}
+                                            onClick={() => !isFull && setSelectedJobId(job.id)}
+                                            className={`group p-4 rounded-xl border cursor-pointer transition-all flex justify-between items-center relative overflow-hidden font-bold
+                                                ${selectedJobId === job.id
+                                                    ? 'bg-blue-600 border-blue-500 shadow-lg shadow-blue-600/30'
+                                                    : isFull
+                                                        ? 'bg-slate-100 dark:bg-slate-800/20 border-slate-200 dark:border-white/5 opacity-50 cursor-not-allowed'
+                                                        : theme === 'dark'
+                                                            ? 'bg-slate-800/50 border-white/10 hover:border-blue-500/50 hover:bg-slate-800'
+                                                            : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-white'}`}
+                                        >
+                                            <div className="relative z-10 text-left">
+                                                <p className={`text-sm ${selectedJobId === job.id ? 'text-white' : theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{job.title}</p>
+                                                <p className={`text-[10px] mt-1 ${selectedJobId === job.id ? 'text-blue-100' : theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                                                    Quota: {job.acceptedCount}/{job.interviewQuota} {job.pendingInvitationsCount > 0 ? `(+${job.pendingInvitationsCount} en attente)` : ''}
+                                                    {isFull && <span className="ml-2 text-red-500 font-bold">PLEIN</span>}
+                                                </p>
                                             </div>
-                                        )}
-                                    </div>
-                                ))
+                                            {selectedJobId === job.id && (
+                                                <div className="bg-white text-blue-600 p-1.5 rounded-full shadow-sm relative z-10">
+                                                    <Check size={14} strokeWidth={3} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })
                             )}
                         </div>
 
                         <button
                             onClick={handleInvite}
-                            disabled={!selectedJobId || inviting}
+                            disabled={!selectedJobId || inviting || (selectedJobId && (jobOffers.find(j => j.id === selectedJobId)?.acceptedCount + (jobOffers.find(j => j.id === selectedJobId)?.pendingInvitationsCount || 0) >= (jobOffers.find(j => j.id === selectedJobId)?.interviewQuota + 10)))}
                             className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-slate-200 disabled:to-slate-300 disabled:text-slate-400 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 disabled:shadow-none transition-all flex items-center justify-center gap-2 uppercase tracking-wide text-sm"
                         >
-                            {inviting ? <Loader2 size={20} className="animate-spin" /> : "Envoyer l'invitation"}
+                            {inviting ? <Loader2 size={20} className="animate-spin" /> : (selectedJobId && (jobOffers.find(j => j.id === selectedJobId)?.acceptedCount + (jobOffers.find(j => j.id === selectedJobId)?.pendingInvitationsCount || 0) >= (jobOffers.find(j => j.id === selectedJobId)?.interviewQuota + 10))) ? "Invitation max atteint" : "Envoyer l'invitation"}
                         </button>
                     </div>
                 </div>

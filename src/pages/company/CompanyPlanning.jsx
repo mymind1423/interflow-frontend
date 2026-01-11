@@ -104,20 +104,20 @@ export default function CompanyPlanning() {
                 <div className="flex glass-panel !p-1 gap-1 shadow-sm rounded-xl">
                     <button
                         onClick={() => setFilter("ALL")}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === "ALL" ? "bg-theme-secondary text-white shadow-md" : "text-theme-secondary hover:text-theme-primary hover:bg-white/5"}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === "ALL" ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md" : "text-theme-secondary hover:text-theme-primary hover:bg-black/5 dark:hover:bg-white/5"}`}
                     >
                         Tous
                     </button>
                     <button
                         onClick={() => setFilter("NORMAL")}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filter === "NORMAL" ? "bg-blue-600 shadow-md shadow-blue-200 dark:shadow-blue-900/20 text-white" : "text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/5"}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filter === "NORMAL" ? "bg-blue-600 shadow-md shadow-blue-200 dark:shadow-blue-900/40 text-white" : "text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-black/5 dark:hover:bg-white/5"}`}
                     >
                         <div className={`w-2 h-2 rounded-full ${filter === "NORMAL" ? "bg-white" : "bg-blue-500"}`}></div>
                         Candidatures
                     </button>
                     <button
                         onClick={() => setFilter("INVITE")}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filter === "INVITE" ? "bg-purple-600 text-white shadow-md shadow-purple-200 dark:shadow-purple-900/20" : "text-theme-secondary hover:text-purple-600 dark:hover:text-purple-400 hover:bg-white/5"}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filter === "INVITE" ? "bg-purple-600 text-white shadow-md shadow-purple-200 dark:shadow-purple-900/40" : "text-theme-secondary hover:text-purple-600 dark:hover:text-purple-400 hover:bg-black/5 dark:hover:bg-white/5"}`}
                     >
                         <div className={`w-2 h-2 rounded-full ${filter === "INVITE" ? "bg-white" : "bg-purple-500"}`}></div>
                         Invités (VIP)
@@ -128,21 +128,21 @@ export default function CompanyPlanning() {
                 <div className="flex glass-panel !p-1 gap-1 shadow-sm rounded-lg">
                     <button
                         onClick={handleExport}
-                        className="p-2 rounded-lg text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/5 transition-all"
+                        className="p-2 rounded-lg text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                         title="Exporter en CSV"
                     >
                         <Download size={18} />
                     </button>
-                    <div className="w-px bg-white/10 mx-1 my-1"></div>
+                    <div className="w-px bg-slate-200 dark:bg-white/10 mx-1 my-1"></div>
                     <button
                         onClick={() => setViewMode("card")}
-                        className={`p-2 rounded-lg transition-all ${viewMode === "card" ? "bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm" : "text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/5"}`}
+                        className={`p-2 rounded-lg transition-all ${viewMode === "card" ? "bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm" : "text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-black/5 dark:hover:bg-white/5"}`}
                     >
                         <LayoutGrid size={18} />
                     </button>
                     <button
                         onClick={() => setViewMode("list")}
-                        className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm" : "text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/5"}`}
+                        className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm" : "text-theme-secondary hover:text-blue-600 dark:hover:text-blue-400 hover:bg-black/5 dark:hover:bg-white/5"}`}
                     >
                         <List size={18} />
                     </button>
@@ -155,7 +155,7 @@ export default function CompanyPlanning() {
                 </div>
             ) : sortedDates.length === 0 ? (
                 <div className="text-center py-20 bg-white/5 border border-white/10 rounded-3xl border-dashed glass-panel">
-                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-white/10">
+                    <div className="w-16 h-16 bg-slate-100 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-200 dark:border-white/10">
                         <Calendar size={32} className="text-theme-secondary" />
                     </div>
                     <p className="text-theme-secondary font-medium">Aucun entretien trouvé pour ce filtre.</p>
@@ -184,7 +184,7 @@ export default function CompanyPlanning() {
 
                                                 {/* Avatar */}
                                                 <div className={`w-10 h-10 shrink-0 rounded-full overflow-hidden border-2 shadow-sm ${isInvite ? 'border-purple-200 dark:border-purple-500/30' : 'border-blue-100 dark:border-blue-500/30'}`}>
-                                                    {interview.studentPhoto ? <img src={interview.studentPhoto} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/10 flex items-center justify-center text-theme-secondary font-bold" >{interview.studentName?.substring(0, 2) || "??"}</div>}
+                                                    {interview.studentPhoto ? <img src={interview.studentPhoto} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-theme-secondary font-bold" >{interview.studentName?.substring(0, 2) || "??"}</div>}
                                                 </div>
 
                                                 {/* Info */}
@@ -236,7 +236,7 @@ export default function CompanyPlanning() {
                                                     {interview.studentPhoto ? (
                                                         <img src={interview.studentPhoto} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <div className={`w-full h-full flex items-center justify-center font-bold text-lg bg-white/10 text-theme-secondary`}>
+                                                        <div className={`w-full h-full flex items-center justify-center font-bold text-lg bg-slate-100 dark:bg-white/10 text-theme-secondary`}>
                                                             {(interview.studentName || "XX").substring(0, 2)}
                                                         </div>
                                                     )}

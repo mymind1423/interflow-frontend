@@ -43,12 +43,13 @@ import PopAdmin from "./templates/soft-pop-theme/AdminPanel";
 
 import GlobalSkeletonLoader from "./components/common/GlobalSkeletonLoader";
 import { AuthProvider, useAuth } from "./authContext";
-import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { ProfileProvider } from "./context/ProfileContext";
 import { NotificationProvider } from "./context/NotificationContext";
 
 function AppContent() {
   const { loading } = useAuth();
+  const { theme } = useTheme();
 
   if (loading) {
     return <GlobalSkeletonLoader />;
@@ -56,6 +57,20 @@ function AppContent() {
 
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: theme === 'dark' ? '#1e293b' : '#ffffff',
+            color: theme === 'dark' ? '#fff' : '#0f172a',
+            border: theme === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: '600'
+          }
+        }}
+      />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -127,7 +142,6 @@ function App() {
           <ToastProvider>
             <NotificationProvider>
               <ProfileProvider>
-                <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff', border: '1px solid #334155' } }} />
                 <AppContent />
               </ProfileProvider>
             </NotificationProvider>
