@@ -5,7 +5,7 @@ import { Calendar, Clock, Video, User, CheckCircle, Phone, MapPin, GraduationCap
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import toast from "react-hot-toast";
-import { calculateAge } from "../../utils/dateUtils";
+import { calculateAge, getUTCAsLocal } from "../../utils/dateUtils";
 
 export default function CompanyPlanning() {
     const [interviews, setInterviews] = useState([]);
@@ -79,8 +79,8 @@ export default function CompanyPlanning() {
         ];
 
         const data = allInterviews.map(interview => ({
-            date: format(new Date(interview.dateTime), "dd/MM/yyyy"),
-            time: format(new Date(interview.dateTime), "HH:mm"),
+            date: format(getUTCAsLocal(interview.dateTime), "dd/MM/yyyy"),
+            time: format(getUTCAsLocal(interview.dateTime), "HH:mm"),
             name: interview.studentName || "",
             phone: interview.studentPhone || "",
             domain: interview.studentDomaine || "",
@@ -165,7 +165,7 @@ export default function CompanyPlanning() {
                     {sortedDates.map(date => (
                         <div key={date} className="animate-fade-in-up">
                             <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 mb-6 pl-4 border-l-4 border-indigo-500 flex items-center gap-3">
-                                {format(new Date(date), "EEEE d MMMM yyyy", { locale: fr })}
+                                {format(getUTCAsLocal(date), "EEEE d MMMM yyyy", { locale: fr })}
                             </h2>
                             <div className={viewMode === 'card' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-3"}>
                                 {groupedInterviews[date].map(interview => {
@@ -179,7 +179,7 @@ export default function CompanyPlanning() {
                                                 {/* Time */}
                                                 <div className={`font-mono font-bold px-2 py-1.5 rounded-lg text-xs shadow-sm border
                                                 ${isInvite ? 'bg-purple-100 dark:bg-purple-500/20 border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-300' : 'bg-white/10 border-white/10 text-theme-secondary'}`}>
-                                                    {format(new Date(interview.dateTime), "HH:mm")}
+                                                    {format(getUTCAsLocal(interview.dateTime), "HH:mm")}
                                                 </div>
 
                                                 {/* Avatar */}
@@ -249,7 +249,7 @@ export default function CompanyPlanning() {
                                                         </h3>
                                                         <div className={`px-2 py-1 rounded-md text-xs font-bold border font-mono
                                                             ${isInvite ? 'bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30' : 'bg-white/10 text-theme-secondary border-white/10'}`}>
-                                                            {format(new Date(interview.dateTime), "HH:mm")}
+                                                            {format(getUTCAsLocal(interview.dateTime), "HH:mm")}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-xs font-medium text-theme-secondary mt-1">
@@ -297,7 +297,7 @@ export default function CompanyPlanning() {
                                                 </div>
 
                                                 <a
-                                                    href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(interview.title || "Entretien")}&dates=${format(new Date(interview.dateTime), "yyyyMMdd'T'HHmmss")}/${format(new Date(new Date(interview.dateTime).getTime() + 30 * 60000), "yyyyMMdd'T'HHmmss")}&details=Entretien+avec+${encodeURIComponent(interview.studentName)}`}
+                                                    href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(interview.title || "Entretien")}&dates=${format(getUTCAsLocal(interview.dateTime), "yyyyMMdd'T'HHmmss")}/${format(getUTCAsLocal(new Date(new Date(interview.dateTime).getTime() + 30 * 60000)), "yyyyMMdd'T'HHmmss")}&details=Entretien+avec+${encodeURIComponent(interview.studentName)}`}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 text-theme-secondary hover:bg-white/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm border border-white/10"

@@ -35,6 +35,7 @@ import JobDrawer from "../../components/modals/JobDrawer";
 import Button from "../../components/common/Button";
 import Skeleton from "../../components/common/Skeleton";
 import QuotaLimitModal from "../../components/modals/QuotaLimitModal";
+import { getUTCAsLocal } from "../../utils/dateUtils";
 
 
 export default function Dashboard() {
@@ -354,7 +355,7 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-400 uppercase font-bold">Date</p>
-                      <p className="font-bold">{new Date(nextInterview.dateObj).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                      <p className="font-bold">{new Date(getUTCAsLocal(nextInterview.dateObj)).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                     </div>
                   </div>
 
@@ -364,7 +365,7 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-400 uppercase font-bold">Heure</p>
-                      <p className="font-bold">{new Date(nextInterview.dateObj).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      <p className="font-bold">{new Date(getUTCAsLocal(nextInterview.dateObj)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
                 </div>

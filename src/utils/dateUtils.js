@@ -5,3 +5,9 @@ export const calculateAge = (dateOfBirth) => {
     const ageDt = new Date(diffMs);
     return Math.abs(ageDt.getUTCFullYear() - 1970);
 };
+
+export const getUTCAsLocal = (date) => {
+    if (!date) return null;
+    const d = new Date(date);
+    return new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+};
