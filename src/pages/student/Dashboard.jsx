@@ -31,7 +31,7 @@ import { openStudentGuide } from "../../components/common/StudentGuide";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
-import JobDrawer from "../../components/modals/JobDrawer";
+import JobDrawer from "../../components/modals/jobDrawer";
 import Button from "../../components/common/Button";
 import Skeleton from "../../components/common/Skeleton";
 import QuotaLimitModal from "../../components/modals/QuotaLimitModal";

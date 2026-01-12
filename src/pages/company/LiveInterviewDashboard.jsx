@@ -8,6 +8,7 @@ import { Video, Calendar, Clock, User, FileText, CheckCircle, Download, MonitorP
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import StudentDetailModal from "../../components/company/StudentDetailModal";
+import { getUTCAsLocal } from "../../utils/dateUtils";
 
 export default function LiveInterviewDashboard() {
     const navigate = useNavigate();
@@ -67,7 +68,7 @@ export default function LiveInterviewDashboard() {
         const data = historyList.map(i => ({
             studentName: i.studentName,
             jobTitle: i.title || i.jobTitle,
-            date: format(new Date(i.dateTime), "dd/MM/yyyy"),
+            date: format(getUTCAsLocal(i.dateTime), "dd/MM/yyyy"),
             score: i.score ? `${i.score}/10` : 'N/A',
             remarks: i.remarks || "Aucune remarque",
             isRetained: i.isRetained ? "OUI" : "NON"
@@ -372,8 +373,8 @@ function QueueItem({ interview, onStart, onClick, idx }) {
                         <img src={interview.studentPhoto} alt={interview.studentName} className="w-full h-full object-cover" />
                     ) : (
                         <>
-                            <span className="text-3xl font-black text-theme-primary">{new Date(interview.dateTime).getDate()}</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-theme-secondary">{format(new Date(interview.dateTime), "MMM", { locale: fr })}</span>
+                            <span className="text-3xl font-black text-theme-primary">{new Date(getUTCAsLocal(interview.dateTime)).getDate()}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-theme-secondary">{format(getUTCAsLocal(interview.dateTime), "MMM", { locale: fr })}</span>
                         </>
                     )}
                 </div>
@@ -388,7 +389,7 @@ function QueueItem({ interview, onStart, onClick, idx }) {
                     </div>
                     <p className="text-blue-500 font-bold text-sm mb-2 uppercase tracking-wide">{interview.title || "Entretien"}</p>
                     <div className="flex items-center gap-4 text-sm text-theme-secondary font-medium">
-                        <span className="flex items-center gap-1.5"><Clock size={14} className="text-blue-500" /> {format(new Date(interview.dateTime), "HH:mm")}</span>
+                        <span className="flex items-center gap-1.5"><Clock size={14} className="text-blue-500" /> {format(getUTCAsLocal(interview.dateTime), "HH:mm")}</span>
                         <span className="flex items-center gap-1.5"><User size={14} className="text-indigo-400" /> Candidat</span>
                     </div>
                 </div>
@@ -430,7 +431,7 @@ function HistoryItem({ interview, idx, onModify, onClick }) {
                                 </span>
                             )}
                         </h3>
-                        <p className="text-xs text-theme-secondary font-bold uppercase tracking-wider">{format(new Date(interview.dateTime), "dd MMM yyyy • HH:mm", { locale: fr })}</p>
+                        <p className="text-xs text-theme-secondary font-bold uppercase tracking-wider">{format(getUTCAsLocal(interview.dateTime), "dd MMM yyyy • HH:mm", { locale: fr })}</p>
                     </div>
                 </div>
                 <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/10">

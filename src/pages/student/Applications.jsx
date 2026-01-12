@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
 import Skeleton from "../../components/common/Skeleton";
 import EmptyState from "../../components/common/EmptyState";
+import { getUTCAsLocal } from "../../utils/dateUtils";
 
 export default function Applications() {
     const { user } = useAuth();
@@ -490,7 +491,7 @@ function ApplicationCard({ app, index, getStatusBaseColor, getStatusColor, getSt
                         </span>
                         <span className="flex items-center gap-2 font-medium">
                             <Calendar size={16} className="text-slate-400" />
-                            {new Date(app.createdAt).toLocaleDateString()}
+                            {new Date(getUTCAsLocal(app.createdAt)).toLocaleDateString()}
                         </span>
                         <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap flex items-center gap-1">
                             <span className="text-amber-500">🪙</span> 1 Jeton consommé
