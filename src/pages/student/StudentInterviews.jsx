@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import EmptyState from "../../components/common/EmptyState";
 import Button from "../../components/common/Button";
+import { getUTCAsLocal } from "../../utils/dateUtils";
 
 export default function StudentInterviews() {
     const [interviews, setInterviews] = useState([]);
@@ -23,7 +24,7 @@ export default function StudentInterviews() {
         let matchesStatus = true;
         if (activeTab === 'SCHEDULED') matchesStatus = (status === 'SCHEDULED' || status === 'ACCEPTED');
         else if (activeTab === 'COMPLETED') matchesStatus = status === 'COMPLETED';
-        else if (activeTab === 'RETAINED') matchesStatus = int.isRetained;
+        else if (activeTab === 'RETAINED') matchesStatus = Boolean(int.isRetained);
 
         return matchesSearch && matchesStatus;
     }).sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -106,12 +107,12 @@ export default function StudentInterviews() {
     };
 
     const formatDate = (dateStr) => {
-        const date = new Date(dateStr);
+        const date = new Date(getUTCAsLocal(dateStr));
         return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     };
 
     const formatTime = (dateStr) => {
-        const date = new Date(dateStr);
+        const date = new Date(getUTCAsLocal(dateStr));
         return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     };
 
@@ -134,7 +135,7 @@ export default function StudentInterviews() {
                     ALL: interviews.length,
                     SCHEDULED: interviews.filter(i => i.status === 'SCHEDULED' || i.status === 'ACCEPTED').length,
                     COMPLETED: interviews.filter(i => i.status === 'COMPLETED').length,
-                    RETAINED: interviews.filter(i => i.isRetained).length
+                    RETAINED: interviews.filter(i => Boolean(i.isRetained)).length
                 };
 
                 return (
@@ -214,14 +215,14 @@ export default function StudentInterviews() {
                                             <div className="flex items-center justify-center gap-2 mb-3 text-amber-500">
                                                 <PartyPopper size={24} />
                                             </div>
-                                            <p className="text-slate-600 dark:text-slate-300 font-medium italic">
+                                            <p className="text-slate-800 dark:text-slate-200 font-bold italic">
                                                 "Félicitations ! Votre profil a retenu toute notre attention. Vous faites partie des candidats sélectionnés pour la suite du processus."
                                             </p>
                                         </div>
 
-                                        <button className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/25 transition-all active:scale-95 flex items-center gap-2">
+                                        <a href={`mailto:${int.companyEmail}`} className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/25 transition-all active:scale-95 flex items-center gap-2">
                                             <MessageSquare size={18} /> Contacter l'entreprise
-                                        </button>
+                                        </a>
                                     </div>
                                 </motion.div>
                             );
@@ -229,7 +230,7 @@ export default function StudentInterviews() {
 
                         // STANDARD CARD DESIGN
                         const status = int.status ? int.status.toUpperCase() : "";
-                        const dateObj = new Date(int.date);
+                        const dateObj = new Date(getUTCAsLocal(int.date));
                         const isToday = new Date().toDateString() === dateObj.toDateString();
 
                         return (
