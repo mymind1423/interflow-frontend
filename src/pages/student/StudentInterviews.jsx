@@ -26,7 +26,7 @@ export default function StudentInterviews() {
         else if (activeTab === 'RETAINED') matchesStatus = int.isRetained;
 
         return matchesSearch && matchesStatus;
-    });
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
     useEffect(() => {
         loadInterviews();

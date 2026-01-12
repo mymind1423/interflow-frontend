@@ -35,7 +35,7 @@ export default function CompanyPlanning() {
     const filteredInterviews = interviews.filter(i => {
         if (filter === "ALL") return true;
         return getCategory(i) === filter;
-    });
+    }).sort((a, b) => new Date(a.dateTime || a.date) - new Date(b.dateTime || b.date));
 
     // Group interviews by date for a nicer layout
     const groupedInterviews = filteredInterviews.reduce((acc, curr) => {

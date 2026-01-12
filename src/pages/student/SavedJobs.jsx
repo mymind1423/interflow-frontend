@@ -3,7 +3,7 @@ import { studentApi } from "../../api/studentApi";
 import { Bookmark, MapPin, Building, Briefcase, DollarSign, Clock, ArrowRight, Trash2, Loader2, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import EmptyState from "../../components/common/EmptyState";
-import JobDrawer from "../../components/modals/jobDrawer";
+import JobDrawer from "../../components/modals/JobDrawer";
 
 export default function SavedJobs() {
     const [jobs, setJobs] = useState([]);
