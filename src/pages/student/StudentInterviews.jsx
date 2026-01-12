@@ -203,12 +203,12 @@ export default function StudentInterviews() {
                                             {int.companyLogo ? (
                                                 <img src={int.companyLogo} alt={int.companyName} className="w-full h-full object-contain" />
                                             ) : (
-                                                <span className="text-2xl font-black text-slate-900 dark:text-white">{int.companyName?.substring(0, 2).toUpperCase()}</span>
+                                                <span className="text-2xl font-black text-black dark:text-white">{int.companyName?.substring(0, 2).toUpperCase()}</span>
                                             )}
                                         </div>
 
-                                        <h3 className="text-2xl font-black text-slate-950 dark:text-white mb-2">{int.companyName}</h3>
-                                        <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-500/10 text-slate-900 dark:text-white rounded-full font-bold text-xs uppercase tracking-wider mb-6">
+                                        <h3 className="text-2xl font-black text-black dark:text-white mb-2">{int.companyName}</h3>
+                                        <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-500/10 text-black dark:text-white rounded-full font-bold text-xs uppercase tracking-wider mb-6">
                                             {int.title}
                                         </div>
 
@@ -216,7 +216,7 @@ export default function StudentInterviews() {
                                             <div className="flex items-center justify-center gap-2 mb-3 text-amber-500">
                                                 <PartyPopper size={24} />
                                             </div>
-                                            <p className="text-slate-900 dark:text-white font-bold italic">
+                                            <p className="text-black dark:text-white font-bold italic">
                                                 "Félicitations ! Votre profil a retenu toute notre attention. Vous faites partie des candidats sélectionnés pour la suite du processus."
                                             </p>
                                         </div>
