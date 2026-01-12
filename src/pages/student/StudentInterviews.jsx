@@ -196,6 +196,7 @@ export default function StudentInterviews() {
                                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-400/10 rounded-tr-full -ml-8 -mb-8 z-0"></div>
 
                                     <div className="relative z-10 flex flex-col items-center text-center">
+                                        {/* Logo Container */}
                                         <div className="w-24 h-24 rounded-3xl bg-white dark:bg-slate-800 p-2 shadow-xl mb-6 border border-amber-100 dark:border-amber-500/20 flex items-center justify-center relative">
                                             <div className="absolute -top-3 -right-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white p-2 rounded-full shadow-lg rotate-12">
                                                 <Trophy size={20} fill="currentColor" />
@@ -203,20 +204,26 @@ export default function StudentInterviews() {
                                             {int.companyLogo ? (
                                                 <img src={int.companyLogo} alt={int.companyName} className="w-full h-full object-contain" />
                                             ) : (
-                                                <span className="text-2xl font-black text-black dark:text-white">{int.companyName?.substring(0, 2).toUpperCase()}</span>
+                                                // FORCE: !text-slate-950
+                                                <span className="text-2xl font-black !text-slate-950 dark:!text-white">{int.companyName?.substring(0, 2).toUpperCase()}</span>
                                             )}
                                         </div>
 
-                                        <h3 className="text-2xl font-black text-black dark:text-white mb-2">{int.companyName}</h3>
-                                        <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-500/10 text-black dark:text-white rounded-full font-bold text-xs uppercase tracking-wider mb-6">
+                                        {/* Company Name - FORCE: !text-slate-950 */}
+                                        <h3 className="text-2xl font-black !text-slate-950 dark:!text-white mb-2">{int.companyName}</h3>
+
+                                        {/* Title Badge - FORCE: !text-slate-900 */}
+                                        <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-500/10 !text-slate-900 dark:!text-white rounded-full font-bold text-xs uppercase tracking-wider mb-6">
                                             {int.title}
                                         </div>
 
+                                        {/* Message Box */}
                                         <div className="bg-white/60 dark:bg-slate-800/60 p-6 rounded-2xl border border-amber-100 dark:border-amber-500/10 w-full mb-6 backdrop-blur-sm">
                                             <div className="flex items-center justify-center gap-2 mb-3 text-amber-500">
                                                 <PartyPopper size={24} />
                                             </div>
-                                            <p className="text-black dark:text-white font-bold italic">
+                                            {/* Message Text - FORCE: !text-slate-800 */}
+                                            <p className="!text-slate-800 dark:!text-white font-bold italic">
                                                 "Félicitations ! Votre profil a retenu toute notre attention. Vous faites partie des candidats sélectionnés pour la suite du processus."
                                             </p>
                                         </div>
