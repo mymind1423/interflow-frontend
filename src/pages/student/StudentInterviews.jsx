@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { studentApi } from "../../api/studentApi";
-import { Calendar, MapPin, MessageSquare, Loader2, CheckCircle, Video, Clock, Trophy, PartyPopper, Search } from "lucide-react";
+import { Calendar, MapPin, MessageSquare, Loader2, CheckCircle, Video, Clock, Trophy, PartyPopper, Search, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import EmptyState from "../../components/common/EmptyState";
@@ -14,6 +14,7 @@ export default function StudentInterviews() {
     const [activeTab, setActiveTab] = useState("ALL"); // 'ALL' | 'SCHEDULED' | 'COMPLETED' | 'RETAINED'
     const [feedbackLoading, setFeedbackLoading] = useState(false);
     const [checkInLoading, setCheckInLoading] = useState(null);
+    const [contactMode, setContactMode] = useState(null); // Stores ID of interview where contact mode is active
 
     const filteredInterviews = interviews.filter(int => {
         const matchesSearch = int.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -202,12 +203,12 @@ export default function StudentInterviews() {
                                             {int.companyLogo ? (
                                                 <img src={int.companyLogo} alt={int.companyName} className="w-full h-full object-contain" />
                                             ) : (
-                                                <span className="text-2xl font-black text-amber-900 dark:text-amber-100">{int.companyName?.substring(0, 2).toUpperCase()}</span>
+                                                <span className="text-2xl font-black text-slate-900 dark:text-slate-900">{int.companyName?.substring(0, 2).toUpperCase()}</span>
                                             )}
                                         </div>
 
-                                        <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">{int.companyName}</h3>
-                                        <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 rounded-full font-bold text-xs uppercase tracking-wider mb-6">
+                                        <h3 className="text-2xl font-black text-slate-950 dark:text-slate-950 mb-2">{int.companyName}</h3>
+                                        <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-100 text-slate-900 dark:text-slate-900 rounded-full font-bold text-xs uppercase tracking-wider mb-6">
                                             {int.title}
                                         </div>
 
@@ -215,14 +216,43 @@ export default function StudentInterviews() {
                                             <div className="flex items-center justify-center gap-2 mb-3 text-amber-500">
                                                 <PartyPopper size={24} />
                                             </div>
-                                            <p className="text-slate-800 dark:text-slate-200 font-bold italic">
+                                            <p className="text-slate-900 dark:text-slate-900 font-bold italic">
                                                 "Félicitations ! Votre profil a retenu toute notre attention. Vous faites partie des candidats sélectionnés pour la suite du processus."
                                             </p>
                                         </div>
 
-                                        <a href={`mailto:${int.companyEmail}`} className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl font-bold shadow-lg shadow-amber-500/25 transition-all active:scale-95 flex items-center gap-2">
-                                            <MessageSquare size={18} /> Contacter l'entreprise
-                                        </a>
+                                        {contactMode === int.id ? (
+                                            <div className="w-full max-w-sm mx-auto bg-white dark:bg-slate-800 p-2 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col gap-2 animate-in fade-in zoom-in duration-200">
+                                                <input
+                                                    type="text"
+                                                    readOnly
+                                                    value={int.companyEmail || "Email non disponible"}
+                                                    className="w-full text-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg py-2 px-3 text-slate-800 dark:text-slate-200 font-mono text-sm focus:outline-none"
+                                                    onClick={(e) => e.target.select()}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setContactMode(null)}
+                                                        className="flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                                                    >
+                                                        Annuler
+                                                    </button>
+                                                    <button
+                                                        onClick={() => window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${int.companyEmail}`, '_blank')}
+                                                        className="flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-red-500 hover:bg-red-600 text-white transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        Envoyer <ExternalLink size={12} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => setContactMode(int.id)}
+                                                className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold shadow-lg shadow-amber-500/25 transition-all active:scale-95 flex items-center gap-2 rounded-xl"
+                                            >
+                                                <MessageSquare size={18} className="text-slate-950" /> Contacter l'entreprise
+                                            </button>
+                                        )}
                                     </div>
                                 </motion.div>
                             );
